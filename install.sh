@@ -28,7 +28,6 @@ set -euo pipefail
 
 REPO="drakulavich/iago"
 REPO_URL="https://github.com/${REPO}"
-RAW_BASE="https://raw.githubusercontent.com/${REPO}"
 
 # ---------- styling ----------------------------------------------------------
 
