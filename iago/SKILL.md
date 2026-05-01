@@ -1,7 +1,7 @@
 ---
-name: pr-diagrams
-description: Append a Mermaid diagram (sequence, flow, class, or entity-relation) to a GitHub PR's existing /review comment. Use after the /review skill finishes, or when the user asks to add/append a diagram to a pull request review. Auto-detects the most useful diagram type from the diff; accepts an explicit override.
-when_to_use: Run after /review completes on a pull request, or whenever the user says "add a diagram", "append a diagram", "add mermaid", or "diagram this PR". Also run when /review itself decides a visual would help reviewers.
+name: iago
+description: Append a Mermaid diagram (sequence, flow, class, or entity-relation) to a GitHub PR's existing /review comment. Like Iago the parrot from Aladdin, this skill loudly squawks a visual summary on top of an existing review. Also triggered by /squawk. Use after the /review skill finishes, or when the user asks to add/append a diagram to a pull request review, or says "squawk". Auto-detects the most useful diagram type from the diff; accepts an explicit override.
+when_to_use: Run after /review completes on a pull request, or whenever the user says "add a diagram", "append a diagram", "add mermaid", "diagram this PR", "squawk", or invokes /squawk. Also run when /review itself decides a visual would help reviewers.
 argument-hint: "[pr-number] [type?] [--mode=append|comment]"
 allowed-tools:
   - Bash(gh pr view *)
