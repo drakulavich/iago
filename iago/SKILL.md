@@ -81,6 +81,13 @@ Parse `$ARGUMENTS` permissively:
    - For `class`: include only classes touched by the diff plus their direct collaborators; show new members with `+` and removed with `-`.
    - For `er`: only include tables/entities touched by the migration plus their FK neighbors.
    - No HTML, no inline styles unless necessary for readability. No emoji in node labels.
+   - **Never put `;` inside a `sequenceDiagram` message label.** GitHub's Mermaid
+     parser treats `;` as a statement separator inside sequence diagrams, so
+     `Boot-->>User: printUsage(); exit 0` is split into two statements and
+     the trailing half breaks the diagram. Use `,` or split into two
+     messages. This is the most common rendering failure in this skill —
+     re-read your generated block and replace any `;` with `,` in message
+     labels before continuing.
 
 5. **Wrap it.** Produce this exact block (the markers let later runs find and replace it idempotently):
 
@@ -98,9 +105,14 @@ Parse `$ARGUMENTS` permissively:
 
 6. **Append (or replace) in the /review comment.**
 
-   Run the helper script — it handles finding the /review comment, idempotent
-   replacement of any existing `iago` block, and falling back to a new
-   comment if needed.
+   **You MUST use the helper script. Do NOT call `gh pr comment`,
+   `gh api -X PATCH .../comments/...`, or any other direct GitHub write
+   yourself for the diagram.** The script is the only sanctioned write path:
+   it locates the right comment, idempotently replaces any prior iago block,
+   handles new-comment fallback, and runs a deterministic Mermaid sanitizer
+   that catches model mistakes (e.g. stray `;` in sequence message labels)
+   before posting. Bypassing it means the diagram ships unchecked and is
+   the #1 source of broken renders.
 
    The helper lives at `scripts/append_diagram.sh` in this skill's own
    directory. Different runtimes expose that directory differently —
