@@ -50,17 +50,13 @@ NAME="${REPO##*/}"
 
 DIAGRAM_BLOCK="$(cat "$DIAGRAM_FILE")"
 
-# Sanitize the Mermaid block deterministically before posting. Models keep
-# slipping ';' into sequence-diagram message labels and GitHub's Mermaid
-# parser treats ';' as a statement separator inside sequenceDiagram, so
-# the trailing half blows up. The actual sanitizer lives in a sibling
-# Python script — keeping it out of a heredoc avoids macOS bash 3.2
-# parse issues with embedded parens.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SANITIZER="$SCRIPT_DIR/sanitize_mermaid.py"
-SANITIZE_PY="$(command -v python3 || command -v python || true)"
-if [[ -n "$SANITIZE_PY" && -f "$SANITIZER" ]]; then
-  if SANITIZED="$("$SANITIZE_PY" "$SANITIZER" "$DIAGRAM_BLOCK" 2>/dev/null)"; then
+PYTHON="$(command -v python3 || command -v python || true)"
+
+# Sanitize Mermaid before posting; see sanitize_mermaid.py. Kept in a sibling
+# script to avoid macOS bash 3.2 paren-parse issues inside a heredoc.
+if [[ -n "$PYTHON" ]]; then
+  if SANITIZED="$("$PYTHON" "$SCRIPT_DIR/sanitize_mermaid.py" "$DIAGRAM_BLOCK")"; then
     DIAGRAM_BLOCK="$SANITIZED"
   fi
 fi
@@ -125,7 +121,6 @@ CURRENT_BODY="$(jq -r --argjson id "$TARGET_ID" '
 ' <<<"$COMMENTS_JSON")"
 
 # Replace any prior iago block; otherwise append.
-PYTHON="$(command -v python3 || command -v python || true)"
 if [[ -z "$PYTHON" ]]; then
   echo "python3 (or python) is required for safe in-place replacement" >&2
   exit 2
