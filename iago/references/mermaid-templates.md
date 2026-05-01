@@ -33,6 +33,48 @@ Tips:
 - Use `actor` for humans, `participant` for systems.
 - Group retries / branches with `alt` / `else` / `loop`.
 
+### Sequence diagram pitfalls (Mermaid will reject these)
+
+Inside `alt` / `else` / `opt` / `loop` / `par` blocks, **every line must be a
+message between participants** (e.g. `A->>B: text`) or a nested control
+block — never a bare statement, comment, or pseudo-code line.
+
+```mermaid-bad
+alt invalid args
+    printUsage()    %% ✗ parser error: not a message
+    exit 0          %% ✗ parser error: not a message
+end
+Boot->>Main: continue
+```
+
+Fix it by attributing every action to a participant:
+
+```mermaid-good
+alt invalid args
+    Boot->>Boot: printUsage()
+    Boot-->>User: exit 0
+end
+Boot->>Main: continue
+```
+
+Other traps:
+- Don't put blank lines inside `alt` / `loop` blocks before `end`.
+- A `Note over X: ...` is fine inside blocks; a bare comment line is not.
+- Mermaid `%% comments` are allowed but only on their own line.
+- **Never use `;` inside a message label.** GitHub's Mermaid treats `;` as a
+  statement separator inside sequence diagrams — it will split the line and
+  fail to parse the trailing half. Use `,` or split into two messages:
+
+  ```mermaid-bad
+  Boot-->>User: printUsage(); exit 0     %% ✗ splits on ';'
+  ```
+
+  ```mermaid-good
+  Boot-->>User: printUsage, exit 0       %% ✓ single message
+  Boot-->>User: printUsage()             %% ✓ or split it
+  Boot-->>User: exit 0
+  ```
+
 ---
 
 ## Flow (flowchart)
