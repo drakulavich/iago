@@ -1,164 +1,193 @@
-# iago
+# 🦜 Iago
 
 > _"Awk! Awk! Add a diagram!"_
 
-An Agent Skill that appends a **Mermaid diagram** (sequence, flow,
-class, or entity-relation) to a GitHub pull request's `/review`
-comment — exactly like Greptile does, but driven by your own AI coding
-agent.
+**Greptile-style Mermaid diagrams for AI code reviews — but driven by your own
+agent.** Iago perches on top of a `/review` comment and squawks a visual
+summary of the change: sequence, flow, class, or entity-relation.
 
-Named after [Iago the parrot from Aladdin](https://disney.fandom.com/wiki/Iago)
-because the skill's job is to perch on top of a review comment and
-loudly squawk a visual summary.
+Works as:
 
-It auto-picks the diagram type from the diff (with a manual override),
-posts to the PR using `gh`, and replaces any prior diagram block in
-place so re-running stays idempotent.
+- 🤖 **GitHub Action** — comment `/iago` on any PR (no CLI needed).
+- 💻 **Claude Code skill** — `/iago` in your terminal.
+- 🦦 **Codex CLI skill** — same skill, same standard.
+- 🪞 Aliased as **`/squawk`** in all three.
 
-Works in **Claude Code**, **Codex CLI**, and any other agent that
-implements the open `SKILL.md` standard.
-
-## Two skills, one job
-
-This repo ships **two skills** that do the same thing:
-
-- **`iago`** — the real skill, with all logic, rubric, and helper script.
-- **`squawk`** — a thin alias that delegates to `iago`. Exists so
-  `/squawk` shows up in the slash-command menu alongside `/iago`.
-
-Install both, invoke whichever feels right.
+> _Demo GIF coming soon — will live here:_ `docs/demo.gif`
 
 ---
 
-## What it does
+## Why?
 
-- Runs after your `/review` skill (or on demand).
-- Reads the PR diff via `gh pr diff`.
-- Picks one of `sequence`, `flow`, `class`, `er` based on the changes —
-  see [`iago/references/diagram-selection.md`](iago/references/diagram-selection.md).
-- Builds a single Mermaid block using real names from the diff.
-- **Appends** it to the existing `/review` comment (default), or posts
-  it as a standalone comment with `--mode=comment`.
-- On re-run, replaces the previous diagram block in place — no
-  duplicates.
+Greptile and CodeRabbit auto-add Mermaid diagrams to every PR. Claude Code's
+and Codex's `/review` are great, but they don't draw. Iago fills that gap —
+without locking you into a SaaS reviewer.
 
-GitHub renders ` ```mermaid ` blocks natively, so no extra service is
-needed.
+## How it picks the diagram type
 
-## Usage
+Auto-detected from the diff (priority order — first match wins):
 
-```text
-/iago                         # auto-detect PR + type, append to /review
-/iago 230                     # explicit PR number
-/iago 230 sequence            # explicit type override
-/iago --mode=comment          # post as a new comment instead of appending
+| Signal | Type |
+|---|---|
+| Migrations / `*.sql` / `schema.prisma` / ORM models | `er` |
+| ≥2 OO files with new `class` / `interface` / `trait` | `class` |
+| Cross-component request flow (handler + client + worker) | `sequence` |
+| Branching / state-machine / non-trivial logic | `flow` |
+| Trivial change (docs / deps / formatting) | **abstain** |
 
-/squawk                       # same thing, alias
-/squawk 230 er
-```
+Override anytime: `/iago sequence`, `/iago er`, etc.
 
-Accepted types: `sequence`, `flow` (alias `flowchart`), `class`,
-`er` (aliases `erd`, `entity`, `entity-relation`).
+Full rubric: [`iago/references/diagram-selection.md`](iago/references/diagram-selection.md).
 
-## Requirements
-
-- `gh` CLI, authenticated (`gh auth status`).
-- `jq`.
-- `python3` (used for safe in-place block replacement inside the
-  comment body).
-- Your `/review` skill should ideally embed the marker
-  `<!-- review-skill -->` somewhere in its comment. If not, this skill
-  falls back to "most recent comment by you that starts with
-  `## Review`".
+---
 
 ## Install
 
-### Claude Code
+### Option 1 — GitHub Action (recommended for teams)
 
-Personal (all projects):
+Drop this file into `.github/workflows/iago.yml`:
+
+```yaml
+name: Iago
+on:
+  issue_comment:
+    types: [created]
+permissions:
+  pull-requests: write
+  contents: read
+jobs:
+  iago:
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/iago')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: drakulavich/iago@v0.1.0
+        with:
+          # Pick one to get LLM-quality diagrams (otherwise heuristic fallback is used):
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+```
+
+Then on any PR, comment `/iago` (or `/iago sequence`, etc.) and Iago appends a
+diagram to the most recent `/review` comment, or posts a new one.
+
+Full example with all inputs: [`examples/workflow.yml`](examples/workflow.yml).
+
+### Option 2 — Claude Code (skill)
+
+Via the Claude Code marketplace:
+
+```bash
+/plugin marketplace add drakulavich/iago
+/plugin install iago@iago-marketplace
+```
+
+Or manually:
 
 ```bash
 git clone https://github.com/drakulavich/iago /tmp/iago-skill
-mkdir -p ~/.claude/skills
 cp -R /tmp/iago-skill/iago    ~/.claude/skills/iago
 cp -R /tmp/iago-skill/squawk  ~/.claude/skills/squawk
 rm -rf /tmp/iago-skill
 ```
 
-Project-only — same idea but copy into `.claude/skills/` instead.
+Invoke with `/iago` or `/squawk` in any session, or just say "squawk this PR".
 
-That's it. Claude Code picks up both `SKILL.md` files automatically.
-Invoke with `/iago` or `/squawk`, or just say "squawk this PR" and
-Claude will trigger it implicitly.
-
-### Codex CLI
-
-Personal:
+### Option 3 — Codex CLI (skill)
 
 ```bash
 git clone https://github.com/drakulavich/iago /tmp/iago-skill
-mkdir -p ~/.agents/skills
 cp -R /tmp/iago-skill/iago    ~/.agents/skills/iago
 cp -R /tmp/iago-skill/squawk  ~/.agents/skills/squawk
 rm -rf /tmp/iago-skill
 ```
 
-Project-only — copy into `.agents/skills/` instead.
+Invoke with `$iago`, `$squawk`, or `/skills`. Same `SKILL.md` open standard,
+no Codex-specific changes needed.
 
-Invoke with `$iago`, `$squawk`, or via `/skills`. Same `SKILL.md` open
-standard, no changes needed.
+### Option 4 — Copilot CLI / Gemini CLI
 
-### Copilot CLI / Gemini CLI
+Drop the two skill folders into `.github/skills/` (Copilot) or `.gemini/skills/`
+(Gemini). Behavior is identical.
 
-Drop the two folders into `.github/skills/` (Copilot) or
-`.gemini/skills/` (Gemini). Behavior is identical.
+---
 
-### Don't want the alias?
+## Usage
 
-Just skip the `squawk/` copy step. `iago` works on its own.
+### In CLI (Claude Code / Codex)
 
-## How auto-detection works
+```text
+/iago                         # auto-detect PR + type, append to /review
+/iago 230                     # explicit PR number
+/iago 230 sequence            # explicit type override
+/iago --mode=comment          # post as a new comment
 
-Priority order — first match wins:
+/squawk                       # alias
+```
 
-| Signal | Type |
+Accepted types: `sequence`, `flow` (alias `flowchart`), `class`,
+`er` (aliases `erd`, `entity`).
+
+### In GitHub (Action)
+
+Just comment on a PR:
+
+```text
+/iago
+/iago er
+/iago flow --mode=comment
+```
+
+Iago reacts 👀 → does its work → reacts 🚀 on success or 😕 on failure.
+
+---
+
+## Hooking it to your `/review` skill
+
+Best UX is: run `/review` first, then `/iago`. Iago finds your `/review`
+comment by looking for the marker `<!-- review-skill -->` in its body.
+
+If your review skill doesn't emit that marker, Iago falls back to "most
+recent comment by you starting with `## Review`".
+
+If you want one command to do both, the cleanest path today is the Action +
+having Codex/Claude post a `/review` first, then commenting `/iago`.
+
+---
+
+## Inputs (Action)
+
+| Input | Default | Description |
+|---|---|---|
+| `github-token` | `${{ github.token }}` | Token with `pull-requests: write`. |
+| `trigger` | `/iago` | Comment prefix that activates the Action. |
+| `diagram-type` | `auto` | `auto` \| `sequence` \| `flow` \| `class` \| `er`. |
+| `mode` | `append` | `append` to /review comment, or `comment` for standalone. |
+| `llm-provider` | `auto` | `auto` \| `anthropic` \| `openai` \| `none`. |
+| `anthropic-api-key` | _(none)_ | Anthropic API key. |
+| `openai-api-key` | _(none)_ | OpenAI API key. |
+| `llm-model` | _(provider default)_ | `claude-sonnet-4-5`, `gpt-4o-mini`, etc. |
+| `review-comment-marker` | `<!-- review-skill -->` | Marker to find /review. |
+
+## Outputs (Action)
+
+| Output | Description |
 |---|---|
-| Migrations / schema files / ORM models | `er` |
-| ≥2 OO files with new classes / inheritance | `class` |
-| Cross-component request flow (handler + client + worker) | `sequence` |
-| Branching / state-machine logic in one component | `flow` |
-| Trivial change (docs, deps, formatting) | **abstain** |
+| `comment-url` | URL of the comment that was edited or created. |
+| `diagram-type` | Type generated, or `skipped` if Iago abstained. |
 
-Full rubric and tie-breakers in
-[`iago/references/diagram-selection.md`](iago/references/diagram-selection.md).
-Templates for each type in
-[`iago/references/mermaid-templates.md`](iago/references/mermaid-templates.md).
-
-## Hook it into your /review skill
-
-Easiest pattern: have your `/review` skill end with a step that invokes
-this one. In your review skill's `SKILL.md`, add a final instruction:
-
-```markdown
-After posting the review comment, invoke the `iago` skill with the
-same PR number so a Mermaid diagram is appended to the comment.
-```
-
-For idempotent appending to work cleanly, include this marker line in
-the body of the comment your `/review` skill posts:
-
-```markdown
-<!-- review-skill -->
-```
+---
 
 ## Repo layout
 
 ```
 iago/
-├── README.md
-├── LICENSE
+├── action.yml                          # GitHub Action entrypoint
+├── action/scripts/run.py               # Action implementation
+├── .claude-plugin/
+│   ├── marketplace.json                # Claude Code marketplace manifest
+│   └── plugin.json                     # Plugin manifest
 ├── iago/
-│   ├── SKILL.md                       # main skill
+│   ├── SKILL.md                        # Main CLI skill
 │   ├── scripts/append_diagram.sh
 │   ├── references/
 │   │   ├── diagram-selection.md
@@ -168,8 +197,10 @@ iago/
 │       ├── flow.md
 │       ├── class.md
 │       └── er.md
-└── squawk/
-    └── SKILL.md                       # alias → delegates to iago
+├── squawk/
+│   └── SKILL.md                        # Alias for iago
+└── examples/
+    └── workflow.yml                    # Example GitHub Actions workflow
 ```
 
 ## License

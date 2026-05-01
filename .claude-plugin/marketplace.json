@@ -1,0 +1,42 @@
+{
+  "$schema": "https://docs.claude.com/schemas/marketplace.json",
+  "name": "iago-marketplace",
+  "owner": {
+    "name": "drakulavich",
+    "url": "https://github.com/drakulavich"
+  },
+  "metadata": {
+    "description": "Iago — Greptile-style Mermaid diagrams for AI code reviews. Skill, alias, and GitHub Action.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "iago",
+      "source": "./",
+      "description": "Append a Mermaid diagram (sequence/flow/class/er) to a GitHub PR's /review comment. Auto-detects type from the diff. Greptile-style, but driven by your AI coding agent.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Anton Yakutovich",
+        "url": "https://github.com/drakulavich"
+      },
+      "homepage": "https://github.com/drakulavich/iago",
+      "repository": "https://github.com/drakulavich/iago",
+      "license": "MIT",
+      "keywords": ["pr", "review", "mermaid", "diagram", "github", "code-review", "greptile"]
+    },
+    {
+      "name": "squawk",
+      "source": "./",
+      "description": "Alias for the `iago` skill — same behavior, triggered by /squawk.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Anton Yakutovich",
+        "url": "https://github.com/drakulavich"
+      },
+      "homepage": "https://github.com/drakulavich/iago",
+      "repository": "https://github.com/drakulavich/iago",
+      "license": "MIT",
+      "keywords": ["pr", "review", "mermaid", "alias", "iago"]
+    }
+  ]
+}

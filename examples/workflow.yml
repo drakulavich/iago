@@ -1,0 +1,34 @@
+name: Iago
+
+# Drop this file into .github/workflows/iago.yml in any repo to enable
+# /iago in PR comments.
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  iago:
+    # Only run on PRs and only when the comment starts with /iago.
+    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/iago')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: drakulavich/iago@v0.1.0
+        with:
+          # Optional. Defaults to ${{ github.token }}.
+          # github-token: ${{ secrets.GITHUB_TOKEN }}
+
+          # Pick ONE of these to enable LLM-quality diagrams.
+          # Without either, Iago falls back to a heuristic (still works,
+          # but diagrams are less rich).
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+
+          # Optional overrides:
+          # diagram-type: auto       # auto | sequence | flow | class | er
+          # mode: append             # append | comment
+          # llm-model: claude-sonnet-4-5
