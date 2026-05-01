@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# append_diagram.sh — idempotently append/replace a pr-diagrams Mermaid block
+# append_diagram.sh — idempotently append/replace a iago Mermaid block
 # inside the most recent /review comment on a GitHub PR. Falls back to a new
 # comment if no /review comment is found or --mode=comment is passed.
 #
@@ -109,7 +109,8 @@ CURRENT_BODY="$(jq -r --argjson id "$TARGET_ID" '
   .[] | select(.id == $id) | .body
 ' <<<"$COMMENTS_JSON")"
 
-# Replace any prior pr-diagrams block; otherwise append.
+# Replace any prior iago block (matches both new 'iago:' markers and legacy
+# 'pr-diagrams:' markers from earlier versions); otherwise append.
 PYTHON="$(command -v python3 || command -v python || true)"
 if [[ -z "$PYTHON" ]]; then
   echo "python3 (or python) is required for safe in-place replacement" >&2
@@ -120,7 +121,7 @@ NEW_BODY="$("$PYTHON" - "$CURRENT_BODY" "$DIAGRAM_BLOCK" <<'PY'
 import re, sys
 current, block = sys.argv[1], sys.argv[2]
 pattern = re.compile(
-    r"<!--\s*pr-diagrams:begin\s*-->.*?<!--\s*pr-diagrams:end\s*-->",
+    r"<!--\s*(?:iago|pr-diagrams):begin\s*-->.*?<!--\s*(?:iago|pr-diagrams):end\s*-->",
     re.DOTALL,
 )
 if pattern.search(current):
