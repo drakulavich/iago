@@ -100,10 +100,19 @@ Parse `$ARGUMENTS` permissively:
 
    Run the helper script — it handles finding the /review comment, idempotent
    replacement of any existing `iago` block, and falling back to a new
-   comment if needed:
+   comment if needed.
+
+   The helper lives at `scripts/append_diagram.sh` in this skill's own
+   directory. Different runtimes expose that directory differently —
+   `${CLAUDE_SKILL_DIR}` in Claude Code, `${OPENCODE_SKILL_DIR}` in OpenCode,
+   etc. Pick the one your runtime sets, or resolve it from the path of this
+   `SKILL.md` file (typically `~/.claude/skills/iago/`,
+   `~/.agents/skills/iago/`, or `~/.config/opencode/skills/iago/`).
 
    ```bash
-   bash "${CLAUDE_SKILL_DIR}/scripts/append_diagram.sh" \
+   # Pick the env var your runtime sets, or substitute the absolute path:
+   SKILL_DIR="${CLAUDE_SKILL_DIR:-${OPENCODE_SKILL_DIR:-$(dirname "$0")}}"
+   bash "$SKILL_DIR/scripts/append_diagram.sh" \
      --repo "$REPO" \
      --pr "$PR" \
      --mode "$MODE" \

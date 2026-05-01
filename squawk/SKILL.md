@@ -27,11 +27,15 @@ follow it step-by-step using the same `$ARGUMENTS` you received.
 
 Concretely:
 
-1. Read `${CLAUDE_SKILL_DIR}/../iago/SKILL.md` (relative to this skill's
-   directory) and treat it as your operating instructions.
-2. Use the helper at `${CLAUDE_SKILL_DIR}/../iago/scripts/append_diagram.sh`
-   when it's time to post the diagram.
-3. Use the references and examples under `${CLAUDE_SKILL_DIR}/../iago/`
-   for selection rules and Mermaid syntax.
+1. Read `iago/SKILL.md` from the sibling directory next to this skill, and
+   treat it as your operating instructions. The two skills are always
+   installed side-by-side; the `iago/` directory is right next to this
+   `squawk/` directory in whichever skills folder your runtime uses
+   (`~/.claude/skills/`, `~/.agents/skills/`, `~/.config/opencode/skills/`,
+   etc.).
+2. Use the helper at `../iago/scripts/append_diagram.sh` (relative to this
+   skill's directory) when it's time to post the diagram.
+3. Use the references and examples under `../iago/` for selection rules and
+   Mermaid syntax.
 
 Do not duplicate logic here — keep `iago` as the single source of truth.
