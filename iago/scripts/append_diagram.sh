@@ -50,6 +50,47 @@ NAME="${REPO##*/}"
 
 DIAGRAM_BLOCK="$(cat "$DIAGRAM_FILE")"
 
+# Sanitize the Mermaid block deterministically before posting. Models keep
+# slipping ';' into sequence-diagram message labels (e.g.
+# 'Boot-->>User: printUsage(); exit 0'), and GitHub's Mermaid parser treats
+# ';' as a statement separator inside sequenceDiagram — so the trailing
+# half blows up. Promptside guidance helps but isn't a guarantee. This is
+# the deterministic safety net.
+#
+# Scope of the rewrite is intentionally narrow:
+#   - only inside fenced ```mermaid blocks
+#   - only on lines that look like a sequence-diagram message
+#     (Actor<arrow>Other: …) — never touches flowcharts/class/er bodies
+#   - replaces ';' with ',' in the message text only (after the first ':')
+#
+# If anything goes wrong, we fall back to the original block unchanged.
+SANITIZE_PY="$(command -v python3 || command -v python || true)"
+if [[ -n "$SANITIZE_PY" ]]; then
+  DIAGRAM_BLOCK="$("$SANITIZE_PY" - "$DIAGRAM_BLOCK" <<'PY' || cat
+import re, sys
+src = sys.argv[1]
+FENCE = re.compile(r"(```mermaid\n)(.*?)(\n```)", re.DOTALL)
+# Sequence-message line: <participant><arrow><participant>: <text>
+# Arrows we accept: ->>, -->>, ->, -->, -), --), -x, --x, ->>+, ->>-
+MSG = re.compile(
+    r"^(\s*[A-Za-z_][\w]*\s*(?:->>?[+-]?|-->>?|--?\)|--?x)\s*[A-Za-z_][\w]*\s*:)(.*)$"
+)
+def rewrite_block(body: str) -> str:
+    out = []
+    for line in body.split("\n"):
+        m = MSG.match(line)
+        if m:
+            head, tail = m.group(1), m.group(2)
+            tail = tail.replace(";", ",")
+            out.append(head + tail)
+        else:
+            out.append(line)
+    return "\n".join(out)
+sys.stdout.write(FENCE.sub(lambda m: m.group(1) + rewrite_block(m.group(2)) + m.group(3), src))
+PY
+)"
+fi
+
 post_new_comment() {
   local tmp
   tmp="$(mktemp)"
