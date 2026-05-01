@@ -8,7 +8,8 @@
 //     with (~50KB-1MB tarballs).
 // The tradeoff is one shelled-out process per install. Acceptable.
 
-import { mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { copyFileSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 export interface TarballSource {
@@ -50,9 +51,11 @@ export async function fetchAndExtract(src: TarballSource, tmpDir: string): Promi
   if (src.localPath) {
     // Test-hook path. We copy rather than reuse the file so a buggy extract
     // can't damage the original.
-    const data = await Bun.file(src.localPath).arrayBuffer().catch(() => null);
-    if (!data) throw new TarballError(`Local tarball not found: ${src.localPath}`);
-    await Bun.write(tarPath, data);
+    try {
+      copyFileSync(src.localPath, tarPath);
+    } catch {
+      throw new TarballError(`Local tarball not found: ${src.localPath}`);
+    }
   } else {
     const refPath = src.isBranch ? "heads" : "tags";
     const url = `https://codeload.github.com/${src.repo}/tar.gz/refs/${refPath}/${src.ref}`;
@@ -60,18 +63,17 @@ export async function fetchAndExtract(src: TarballSource, tmpDir: string): Promi
     if (!res.ok) {
       throw new TarballError(`Download failed (HTTP ${res.status}): ${url}`);
     }
-    await Bun.write(tarPath, await res.arrayBuffer());
+    const buf = Buffer.from(await res.arrayBuffer());
+    writeFileSync(tarPath, buf);
   }
 
-  // Extract.
-  const proc = Bun.spawn(["tar", "-xzf", tarPath, "-C", tmpDir], {
-    stderr: "pipe",
-    stdout: "pipe",
+  // Extract via the system tar binary. Available on macOS, Linux, Win10+.
+  const proc = spawnSync("tar", ["-xzf", tarPath, "-C", tmpDir], {
+    stdio: ["ignore", "pipe", "pipe"],
   });
-  await proc.exited;
-  if (proc.exitCode !== 0) {
-    const err = await new Response(proc.stderr).text();
-    throw new TarballError(`tar extraction failed: ${err.trim()}`);
+  if (proc.status !== 0) {
+    const err = (proc.stderr ?? Buffer.from("")).toString().trim();
+    throw new TarballError(`tar extraction failed: ${err || `exit ${proc.status}`}`);
   }
 
   // Find the top-level dir (codeload produces "iago-<tag>/").
@@ -109,12 +111,13 @@ export async function buildFakeTarball(
   writeFileSync(join(root, "iago", "references", "mermaid-templates.md"), "fake\n");
   writeFileSync(join(root, "iago", "examples", "sequence.md"), "fake\n");
 
-  const proc = Bun.spawn(["tar", "-czf", outPath, "-C", scratchDir, `iago-${version}`], {
-    stdout: "pipe", stderr: "pipe",
-  });
-  await proc.exited;
-  if (proc.exitCode !== 0) {
-    const err = await new Response(proc.stderr).text();
+  const proc = spawnSync(
+    "tar",
+    ["-czf", outPath, "-C", scratchDir, `iago-${version}`],
+    { stdio: ["ignore", "pipe", "pipe"] },
+  );
+  if (proc.status !== 0) {
+    const err = (proc.stderr ?? Buffer.from("")).toString();
     throw new Error(`tar create failed: ${err}`);
   }
 }
