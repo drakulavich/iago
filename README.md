@@ -72,20 +72,36 @@ diagram to the most recent `/review` comment, or posts a new one.
 
 Full example with all inputs: [`examples/workflow.yml`](examples/workflow.yml).
 
-### Option 2 — Quickest install (any CLI)
+### Option 2 — Quickest install (Node / Bun)
 
-One command — installs both skills, auto-detects whether you use Claude Code,
-Codex CLI, Copilot, or Gemini, and creates `~/.claude/skills/` if nothing
-exists yet:
+If you have Node ≥18 or Bun, this is the friendliest path — no `curl | bash`,
+fully typed, with a `--dry-run` flag and a `doctor` subcommand:
+
+```bash
+bunx @drakulavich/iago install --force      # auto-detects Claude / Codex / Copilot / Gemini
+npx  @drakulavich/iago install --force      # same, via npm
+```
+
+Re-run the same command to update. Other commands:
+
+```bash
+bunx @drakulavich/iago doctor                # show install paths and versions
+bunx @drakulavich/iago install --target=both # install into all four agent dirs
+bunx @drakulavich/iago install --version=v0.1.1
+bunx @drakulavich/iago uninstall --target=claude
+```
+
+### Option 3 — Quickest install (curl | bash)
+
+For systems without Node/Bun. Same behavior, pure shell:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | bash -s -- --force
 ```
 
-Re-run the same command later to update. Add `--uninstall` to remove. Run with
-`--help` for all flags (target selection, specific version, dry-run, etc.).
+Re-run to update. Add `--uninstall` to remove. Run with `--help` for all flags.
 
-### Option 3 — Claude Code (skill)
+### Option 4 — Claude Code (skill)
 
 Via the Claude Code marketplace:
 
@@ -105,7 +121,7 @@ rm -rf /tmp/iago-skill
 
 Invoke with `/iago` or `/squawk` in any session, or just say "squawk this PR".
 
-### Option 4 — Codex CLI (skill)
+### Option 5 — Codex CLI (skill)
 
 ```bash
 git clone https://github.com/drakulavich/iago /tmp/iago-skill
@@ -117,7 +133,7 @@ rm -rf /tmp/iago-skill
 Invoke with `$iago`, `$squawk`, or `/skills`. Same `SKILL.md` open standard,
 no Codex-specific changes needed.
 
-### Option 5 — Copilot CLI / Gemini CLI
+### Option 6 — Copilot CLI / Gemini CLI
 
 Drop the two skill folders into `.github/skills/` (Copilot) or `.gemini/skills/`
 (Gemini). Behavior is identical.
@@ -218,16 +234,29 @@ iago/
 
 ## Development
 
+**Shell / install.sh:**
+
 ```bash
-./scripts/test.sh                      # run all tests (auto-installs bats if missing)
+./scripts/test.sh                      # run bats suite (auto-installs bats if missing)
 ./scripts/test.sh -f "uninstall"      # filter by name
 shellcheck install.sh iago/scripts/append_diagram.sh
 ```
 
-CI runs the full suite on Ubuntu and **macOS** — the latter critically tests
-against macOS's stock bash 3.2, which is what catches portability
-regressions. Tests are offline (no network) thanks to the
-`IAGO_LOCAL_TARBALL` hook.
+**TypeScript CLI (`@drakulavich/iago`):**
+
+```bash
+cd cli
+bun install
+bun test                               # 41 tests, ~700ms
+bun run typecheck                      # tsc --noEmit
+bun run dev install --target=claude --dry-run
+```
+
+CI runs both suites on Ubuntu and **macOS**. The macOS leg is critical: it
+tests against macOS's stock bash 3.2 (catches portability regressions in
+`install.sh`) and against macOS's BSD `tar` (catches differences from GNU tar
+in the TS extractor). Tests are offline (no network) thanks to the
+`IAGO_LOCAL_TARBALL` hook — honored by both `install.sh` and the TS CLI.
 
 ## License
 

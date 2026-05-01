@@ -1,0 +1,48 @@
+{
+  "name": "@drakulavich/iago",
+  "version": "0.2.0",
+  "description": "Install/update Iago — a Greptile-style PR-diagram skill for Claude Code, Codex CLI, Copilot, and Gemini.",
+  "type": "module",
+  "bin": {
+    "iago": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "bun build ./src/cli.ts --target=node --outdir=./dist --minify",
+    "dev": "bun run ./src/cli.ts",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "iago",
+    "pr-review",
+    "mermaid",
+    "claude-code",
+    "codex-cli",
+    "agent-skill",
+    "github"
+  ],
+  "homepage": "https://github.com/drakulavich/iago#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/drakulavich/iago.git",
+    "directory": "cli"
+  },
+  "bugs": "https://github.com/drakulavich/iago/issues",
+  "author": "Anton Yakutovich",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^22",
+    "typescript": "^5.6"
+  }
+}

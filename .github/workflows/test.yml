@@ -48,3 +48,27 @@ jobs:
         run: bash --version
       - name: Run tests
         run: bats --print-output-on-failure tests/
+
+  cli:
+    name: cli (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # Run the TS suite on both OSes too — same reasoning as bats: macOS
+        # tar / shell quirks are real and worth catching pre-merge.
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Typecheck
+        run: bun run typecheck
+      - name: Test
+        run: bun test
