@@ -109,8 +109,7 @@ CURRENT_BODY="$(jq -r --argjson id "$TARGET_ID" '
   .[] | select(.id == $id) | .body
 ' <<<"$COMMENTS_JSON")"
 
-# Replace any prior iago block (matches both new 'iago:' markers and legacy
-# 'pr-diagrams:' markers from earlier versions); otherwise append.
+# Replace any prior iago block; otherwise append.
 PYTHON="$(command -v python3 || command -v python || true)"
 if [[ -z "$PYTHON" ]]; then
   echo "python3 (or python) is required for safe in-place replacement" >&2
@@ -121,7 +120,7 @@ NEW_BODY="$("$PYTHON" - "$CURRENT_BODY" "$DIAGRAM_BLOCK" <<'PY'
 import re, sys
 current, block = sys.argv[1], sys.argv[2]
 pattern = re.compile(
-    r"<!--\s*(?:iago|pr-diagrams):begin\s*-->.*?<!--\s*(?:iago|pr-diagrams):end\s*-->",
+    r"<!--\s*iago:begin\s*-->.*?<!--\s*iago:end\s*-->",
     re.DOTALL,
 )
 if pattern.search(current):
