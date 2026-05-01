@@ -1,0 +1,50 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run shellcheck
+        # We deliberately exclude SC2155 (declare and assign separately) and
+        # SC1091 (sourced file not found) to keep signal-to-noise high.
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+          shellcheck --severity=warning install.sh \
+                     iago/scripts/append_diagram.sh
+
+  bats:
+    name: bats (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        # macos-latest is critical: it ships /bin/bash 3.2 by default, which
+        # is what catches regressions like the `declare -A` bug.
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bats
+        run: |
+          if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            brew install bats-core
+          else
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq bats
+          fi
+          bats --version
+      - name: Show bash version
+        run: bash --version
+      - name: Run tests
+        run: bats --print-output-on-failure tests/

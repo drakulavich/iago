@@ -190,15 +190,23 @@ info "Installing iago ${C_BLD}${VERSION}${C_RST} from $REPO_URL"
 TMP="$(mktemp -d -t iagoinst.XXXXXXXX 2>/dev/null || mktemp -d /tmp/iagoinst.XXXXXXXX)"
 trap 'rm -rf -- "$TMP"' EXIT INT TERM
 
-TARBALL_URL="https://codeload.github.com/${REPO}/tar.gz/refs/tags/${VERSION}"
-# If VERSION is "main" or any branch, use heads/.
-if [[ "$VERSION" == "main" ]]; then
-  TARBALL_URL="https://codeload.github.com/${REPO}/tar.gz/refs/heads/${VERSION}"
-fi
-
-info "Downloading ${TARBALL_URL}"
-if ! curl -fsSL --max-time 60 "$TARBALL_URL" -o "$TMP/iago.tar.gz"; then
-  die "Download failed. Check your network or try --version=main."
+# Test hook: IAGO_LOCAL_TARBALL points to a local .tar.gz to use instead of
+# downloading from GitHub. Used by the test suite to keep tests offline-fast.
+if [[ -n "${IAGO_LOCAL_TARBALL:-}" ]]; then
+  [[ -f "$IAGO_LOCAL_TARBALL" ]] || die "IAGO_LOCAL_TARBALL not found: $IAGO_LOCAL_TARBALL"
+  info "Using local tarball: $IAGO_LOCAL_TARBALL"
+  cp "$IAGO_LOCAL_TARBALL" "$TMP/iago.tar.gz"
+  TARBALL_URL="(local: $IAGO_LOCAL_TARBALL)"
+else
+  TARBALL_URL="https://codeload.github.com/${REPO}/tar.gz/refs/tags/${VERSION}"
+  # If VERSION is "main" or any branch, use heads/.
+  if [[ "$VERSION" == "main" ]]; then
+    TARBALL_URL="https://codeload.github.com/${REPO}/tar.gz/refs/heads/${VERSION}"
+  fi
+  info "Downloading ${TARBALL_URL}"
+  if ! curl -fsSL --max-time 60 "$TARBALL_URL" -o "$TMP/iago.tar.gz"; then
+    die "Download failed. Check your network or try --version=main."
+  fi
 fi
 
 info "Extracting"

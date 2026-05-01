@@ -216,6 +216,19 @@ iago/
     └── workflow.yml                    # Example GitHub Actions workflow
 ```
 
+## Development
+
+```bash
+./scripts/test.sh                      # run all tests (auto-installs bats if missing)
+./scripts/test.sh -f "uninstall"      # filter by name
+shellcheck install.sh iago/scripts/append_diagram.sh
+```
+
+CI runs the full suite on Ubuntu and **macOS** — the latter critically tests
+against macOS's stock bash 3.2, which is what catches portability
+regressions. Tests are offline (no network) thanks to the
+`IAGO_LOCAL_TARBALL` hook.
+
 ## License
 
 MIT.
