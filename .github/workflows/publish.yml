@@ -1,0 +1,79 @@
+name: publish
+
+# Triggered by version tags. Publishes the cli/ package to npm.
+#
+# Setup (one-time):
+#   1. Generate an npm "Automation" access token at npmjs.com → Access Tokens.
+#   2. Add it to GitHub repo Secrets as NPM_TOKEN.
+#   3. Tag a release: `git tag v0.2.0 && git push origin v0.2.0`.
+#
+# Safety rails:
+#   - Tag (vX.Y.Z) must match cli/package.json version exactly. Mismatch fails fast.
+#   - Tests + typecheck must pass before publish.
+#   - Uses --provenance so the published package has a verifiable link back to
+#     this exact workflow run + commit.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to publish (e.g. v0.2.0). Must already exist."
+        required: true
+
+permissions:
+  contents: read
+  # id-token: write is required by npm provenance.
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # When run via workflow_dispatch, fetch the requested tag explicitly.
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Verify tag matches package.json version
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          tag_version="${tag#v}"
+          pkg_version=$(node -p "require('./package.json').version")
+          echo "Tag:        $tag (stripped: $tag_version)"
+          echo "package.json: $pkg_version"
+          if [[ "$tag_version" != "$pkg_version" ]]; then
+            echo "::error::Tag $tag does not match cli/package.json version $pkg_version"
+            exit 1
+          fi
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Test
+        run: bun test
+
+      - name: Build
+        run: bun run build
+
+      - name: Publish to npm
+        run: npm publish --access=public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
