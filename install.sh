@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Note: associative arrays (`declare -A`) are bash 4+. macOS ships bash 3.2 by
+# default, so we use a function instead — works on bash 3.2 through 5.x and
+# stays compatible with `set -u`.
 # iago installer / updater.
 #
 # Usage:
@@ -97,22 +100,26 @@ case "$UNAME" in
   *) die "Unsupported OS: $UNAME (only macOS and Linux)" ;;
 esac
 
-# Decide install paths.
-declare -A TARGET_DIR=(
-  [claude]="$HOME/.claude/skills"
-  [codex]="$HOME/.agents/skills"
-  [copilot]="$HOME/.copilot/skills"
-  [gemini]="$HOME/.gemini/skills"
-)
+# Decide install paths. Function form (no associative arrays) so we work on
+# bash 3.2 (default on macOS) under `set -u`.
+target_dir() {
+  case "$1" in
+    claude)  printf '%s\n' "$HOME/.claude/skills" ;;
+    codex)   printf '%s\n' "$HOME/.agents/skills" ;;
+    copilot) printf '%s\n' "$HOME/.copilot/skills" ;;
+    gemini)  printf '%s\n' "$HOME/.gemini/skills" ;;
+    *)       return 1 ;;
+  esac
+}
 
 selected_targets=()
 if [[ "$TARGET" == "auto" ]]; then
   for k in claude codex copilot gemini; do
-    [[ -d "${TARGET_DIR[$k]}" ]] && selected_targets+=("$k")
+    [[ -d "$(target_dir "$k")" ]] && selected_targets+=("$k")
   done
   if [[ ${#selected_targets[@]} -eq 0 ]]; then
     info "No existing skills directory found. Creating ~/.claude/skills as default."
-    mkdir -p "${TARGET_DIR[claude]}"
+    mkdir -p "$(target_dir claude)"
     selected_targets=(claude)
   fi
 elif [[ "$TARGET" == "both" || "$TARGET" == "all" ]]; then
@@ -137,7 +144,7 @@ if [[ "$UNINSTALL" -eq 1 ]]; then
   info "Uninstalling iago from: ${selected_targets[*]}"
   any_removed=0
   for t in "${selected_targets[@]}"; do
-    base="${TARGET_DIR[$t]}"
+    base="$(target_dir "$t")"
     [[ -d "$base" ]] || { dim "  skip $t (no $base)"; continue; }
     for s in "${selected_skills[@]}"; do
       target_path="$base/$s"
@@ -210,7 +217,7 @@ done
 
 needs_overwrite=()
 for t in "${selected_targets[@]}"; do
-  base="${TARGET_DIR[$t]}"
+  base="$(target_dir "$t")"
   for s in "${selected_skills[@]}"; do
     [[ -d "$base/$s" ]] && needs_overwrite+=("$base/$s")
   done
@@ -266,7 +273,7 @@ install_skill() {
 }
 
 for t in "${selected_targets[@]}"; do
-  base="${TARGET_DIR[$t]}"
+  base="$(target_dir "$t")"
   info "Target: ${C_BLD}$t${C_RST} ($base)"
   mkdir -p "$base"
   for s in "${selected_skills[@]}"; do
@@ -277,7 +284,7 @@ done
 # Drop a small VERSION marker so future runs can detect what's installed.
 if [[ "$DRY_RUN" -ne 1 ]]; then
   for t in "${selected_targets[@]}"; do
-    base="${TARGET_DIR[$t]}"
+    base="$(target_dir "$t")"
     for s in "${selected_skills[@]}"; do
       printf '%s\n' "$VERSION" > "$base/$s/.iago-version"
     done
