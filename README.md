@@ -72,7 +72,20 @@ diagram to the most recent `/review` comment, or posts a new one.
 
 Full example with all inputs: [`examples/workflow.yml`](examples/workflow.yml).
 
-### Option 2 — Claude Code (skill)
+### Option 2 — Quickest install (any CLI)
+
+One command — installs both skills, auto-detects whether you use Claude Code,
+Codex CLI, Copilot, or Gemini, and creates `~/.claude/skills/` if nothing
+exists yet:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | bash -s -- --force
+```
+
+Re-run the same command later to update. Add `--uninstall` to remove. Run with
+`--help` for all flags (target selection, specific version, dry-run, etc.).
+
+### Option 3 — Claude Code (skill)
 
 Via the Claude Code marketplace:
 
@@ -92,7 +105,7 @@ rm -rf /tmp/iago-skill
 
 Invoke with `/iago` or `/squawk` in any session, or just say "squawk this PR".
 
-### Option 3 — Codex CLI (skill)
+### Option 4 — Codex CLI (skill)
 
 ```bash
 git clone https://github.com/drakulavich/iago /tmp/iago-skill
@@ -104,7 +117,7 @@ rm -rf /tmp/iago-skill
 Invoke with `$iago`, `$squawk`, or `/skills`. Same `SKILL.md` open standard,
 no Codex-specific changes needed.
 
-### Option 4 — Copilot CLI / Gemini CLI
+### Option 5 — Copilot CLI / Gemini CLI
 
 Drop the two skill folders into `.github/skills/` (Copilot) or `.gemini/skills/`
 (Gemini). Behavior is identical.
