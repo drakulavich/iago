@@ -116,7 +116,7 @@ Commands:
   help                 Show this message.
 
 Install / uninstall options:
-  --target=<sel>       claude | codex | copilot | gemini | both | all | auto
+  --target=<sel>       claude | codex | copilot | gemini | opencode | both | all | auto
                        (default: auto — detect existing skill dirs)
   --version=<tag>      e.g. v0.1.1 (default: latest GitHub release)
   --skill-only=<sel>   iago | squawk | both (default: both)

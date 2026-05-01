@@ -113,16 +113,19 @@ describe("CLI subprocess: install", () => {
     expect(existsSync(join(base, "squawk"))).toBe(false);
   });
 
-  test("--target=both installs into all four agent dirs", async () => {
+  test("--target=both installs into every agent dir", async () => {
     const r = await runCli(["install", "--target=both", "--force"]);
     expect(r.code).toBe(0);
-    for (const [dir, sub] of [
+    // Every entry is a path segments list under fakeHome; tests the full set
+    // of recognized targets (claude/codex/copilot/gemini/opencode).
+    for (const segs of [
       [".claude", "skills"],
       [".agents", "skills"],
       [".copilot", "skills"],
       [".gemini", "skills"],
-    ] as const) {
-      expect(existsSync(join(fakeHome, dir, sub, "iago", "SKILL.md"))).toBe(true);
+      [".config", "opencode", "skills"],
+    ]) {
+      expect(existsSync(join(fakeHome, ...segs, "iago", "SKILL.md"))).toBe(true);
     }
   });
 

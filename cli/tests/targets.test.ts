@@ -30,6 +30,9 @@ describe("targetDir", () => {
     expect(targetDir("codex")).toBe(join(fakeHome, ".agents", "skills"));
     expect(targetDir("copilot")).toBe(join(fakeHome, ".copilot", "skills"));
     expect(targetDir("gemini")).toBe(join(fakeHome, ".gemini", "skills"));
+    expect(targetDir("opencode")).toBe(
+      join(fakeHome, ".config", "opencode", "skills"),
+    );
   });
 });
 
@@ -44,7 +47,7 @@ describe("resolveSelection", () => {
   test("'both' / 'all' expand to every target", () => {
     const a = resolveSelection({ target: "both", skillOnly: "both" });
     const b = resolveSelection({ target: "all", skillOnly: "both" });
-    expect(a.targets).toEqual(["claude", "codex", "copilot", "gemini"]);
+    expect(a.targets).toEqual(["claude", "codex", "copilot", "gemini", "opencode"]);
     expect(b.targets).toEqual(a.targets);
   });
 

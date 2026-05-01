@@ -1,6 +1,6 @@
 // Shared types — keep these tight so refactors stay safe.
 
-export const TARGETS = ["claude", "codex", "copilot", "gemini"] as const;
+export const TARGETS = ["claude", "codex", "copilot", "gemini", "opencode"] as const;
 export type Target = (typeof TARGETS)[number];
 
 export const SKILLS = ["iago", "squawk"] as const;

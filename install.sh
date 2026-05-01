@@ -16,7 +16,7 @@
 #   ./install.sh --target=both --version=latest
 #
 # Flags:
-#   --target=<claude|codex|copilot|gemini|both|all>   Where to install. Default: auto-detect.
+#   --target=<claude|codex|copilot|gemini|opencode|both|all>   Where to install. Default: auto-detect.
 #   --version=<tag|latest>                            Tag to install (e.g. v0.1.1). Default: latest release.
 #   --skill-only=<iago|squawk|both>                   Which skill to install. Default: both.
 #   --dry-run                                         Print what would happen, change nothing.
@@ -76,7 +76,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$TARGET" in
-  auto|claude|codex|copilot|gemini|both|all) ;;
+  auto|claude|codex|copilot|gemini|opencode|both|all) ;;
   *) die "Invalid --target: $TARGET" ;;
 esac
 case "$SKILL_ONLY" in
@@ -103,17 +103,18 @@ esac
 # bash 3.2 (default on macOS) under `set -u`.
 target_dir() {
   case "$1" in
-    claude)  printf '%s\n' "$HOME/.claude/skills" ;;
-    codex)   printf '%s\n' "$HOME/.agents/skills" ;;
-    copilot) printf '%s\n' "$HOME/.copilot/skills" ;;
-    gemini)  printf '%s\n' "$HOME/.gemini/skills" ;;
-    *)       return 1 ;;
+    claude)   printf '%s\n' "$HOME/.claude/skills" ;;
+    codex)    printf '%s\n' "$HOME/.agents/skills" ;;
+    copilot)  printf '%s\n' "$HOME/.copilot/skills" ;;
+    gemini)   printf '%s\n' "$HOME/.gemini/skills" ;;
+    opencode) printf '%s\n' "$HOME/.config/opencode/skills" ;;
+    *)        return 1 ;;
   esac
 }
 
 selected_targets=()
 if [[ "$TARGET" == "auto" ]]; then
-  for k in claude codex copilot gemini; do
+  for k in claude codex copilot gemini opencode; do
     [[ -d "$(target_dir "$k")" ]] && selected_targets+=("$k")
   done
   if [[ ${#selected_targets[@]} -eq 0 ]]; then
@@ -122,7 +123,7 @@ if [[ "$TARGET" == "auto" ]]; then
     selected_targets=(claude)
   fi
 elif [[ "$TARGET" == "both" || "$TARGET" == "all" ]]; then
-  for k in claude codex copilot gemini; do
+  for k in claude codex copilot gemini opencode; do
     selected_targets+=("$k")
   done
 else

@@ -16,10 +16,11 @@ function home(): string {
 export function targetDir(t: Target): string {
   const h = home();
   switch (t) {
-    case "claude":  return join(h, ".claude", "skills");
-    case "codex":   return join(h, ".agents", "skills");
-    case "copilot": return join(h, ".copilot", "skills");
-    case "gemini":  return join(h, ".gemini", "skills");
+    case "claude":   return join(h, ".claude", "skills");
+    case "codex":    return join(h, ".agents", "skills");
+    case "copilot":  return join(h, ".copilot", "skills");
+    case "gemini":   return join(h, ".gemini", "skills");
+    case "opencode": return join(h, ".config", "opencode", "skills");
   }
 }
 
