@@ -1,25 +1,16 @@
 #!/usr/bin/env python3
-"""Sanitize a markdown blob containing fenced ```mermaid blocks.
+"""Replace ';' with ',' in sequence-diagram message labels inside ```mermaid fences.
 
-Models keep slipping ';' into sequence-diagram message labels (e.g.
-'Boot-->>User: printUsage(); exit 0'), and GitHub's Mermaid parser treats
-';' as a statement separator inside sequenceDiagram, so the trailing half
-blows up. Prompt-side guidance helps but isn't a guarantee. This script
-is the deterministic safety net the skill runs before posting.
+GitHub's Mermaid parser treats ';' as a statement separator inside
+sequenceDiagram, so a stray ';' in a message label truncates the line.
 
-Scope of the rewrite is intentionally narrow:
+Scope:
   - only inside fenced ```mermaid blocks
-  - only on lines that look like a sequence-diagram message
-    (Actor<arrow>Other: ...) -- never touches flowcharts/class/er bodies,
-    Notes, participants, or prose outside fences
-  - replaces ';' with ',' in the message text only (after the first ':')
+  - only on lines matching <participant><arrow><participant>: <text>
+  - never touches flowcharts/class/er bodies, Notes, participants, prose
 
-Reads the full markdown body from argv[1] (or stdin if no argv) and writes
-the sanitized result to stdout. On any unexpected error we print the
-original input unchanged so the caller can fall back gracefully.
+Reads markdown from argv[1] (or stdin) and writes sanitized output to stdout.
 """
-
-from __future__ import annotations
 
 import re
 import sys
@@ -27,7 +18,6 @@ import sys
 
 FENCE = re.compile(r"(```mermaid\n)(.*?)(\n```)", re.DOTALL)
 
-# Sequence-message line: <participant><arrow><participant>: <text>
 # Arrows: ->>, -->>, ->, -->, -), --), -x, --x, ->>+, ->>-
 MSG = re.compile(
     r"^(\s*[A-Za-z_][\w]*\s*(?:->>?[+-]?|-->>?|--?\)|--?x)\s*[A-Za-z_][\w]*\s*:)(.*)$"
@@ -39,9 +29,7 @@ def rewrite_block(body: str) -> str:
     for line in body.split("\n"):
         m = MSG.match(line)
         if m:
-            head, tail = m.group(1), m.group(2)
-            tail = tail.replace(";", ",")
-            out.append(head + tail)
+            out.append(m.group(1) + m.group(2).replace(";", ","))
         else:
             out.append(line)
     return "\n".join(out)
@@ -56,10 +44,7 @@ def sanitize(src: str) -> str:
 
 def main() -> int:
     src = sys.argv[1] if len(sys.argv) > 1 else sys.stdin.read()
-    try:
-        sys.stdout.write(sanitize(src))
-    except Exception:
-        sys.stdout.write(src)
+    sys.stdout.write(sanitize(src))
     return 0
 
 
