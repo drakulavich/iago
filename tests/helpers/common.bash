@@ -103,6 +103,12 @@ assert_output_contains() {
     return 1
   fi
 }
+assert_output_equals() {
+  if [[ "$output" != "$1" ]]; then
+    printf 'expected output: %s\nactual output:  %s\n' "$1" "$output" >&2
+    return 1
+  fi
+}
 assert_file_exists() {
   if [[ ! -e "$1" ]]; then
     printf 'expected file to exist: %s\n' "$1" >&2
