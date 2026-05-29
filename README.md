@@ -101,23 +101,39 @@ curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | 
 
 Re-run to update. Add `--uninstall` to remove. Run with `--help` for all flags.
 
-### Option 4 — Claude Code (skill)
+### Option 4 — Claude Code (plugin)
 
-Via your own marketplace (works today):
+Install from the iago marketplace (works today):
 
 ```bash
 /plugin marketplace add drakulavich/iago
 /plugin install iago@iago-marketplace
+/reload-plugins
 ```
 
-Or, once accepted into Anthropic's community marketplace:
+Already added the marketplace before? Refresh it first so it picks up the
+latest manifest: `/plugin marketplace update iago-marketplace`.
+
+Plugin skills are namespaced by the plugin, so invoke them as:
+
+```text
+/iago:iago        # auto-detect PR + diagram type, append to /review
+/iago:squawk      # the /squawk alias, same behavior
+```
+
+Confirm it loaded under `/plugin` → **Installed**, or check that `/iago:` shows
+up in the skill list.
+
+Once it's accepted into Anthropic's community marketplace, you'll be able to
+install it from there instead:
 
 ```bash
 /plugin marketplace add anthropics/claude-plugins-community
 /plugin install iago@claude-community
 ```
 
-Or manually:
+**Prefer the bare `/iago` and `/squawk` names** (no plugin namespace)? Copy the
+skill folders in directly instead of installing the plugin:
 
 ```bash
 git clone https://github.com/drakulavich/iago /tmp/iago-skill
@@ -162,6 +178,10 @@ Drop the two skill folders into `.github/skills/` (Copilot) or `.gemini/skills/`
 
 Accepted types: `sequence`, `flow` (alias `flowchart`), `class`,
 `er` (aliases `erd`, `entity`).
+
+> Installed as a Claude Code **plugin** (Option 4)? The commands are namespaced:
+> use `/iago:iago` and `/iago:squawk`. The bare `/iago` / `/squawk` above apply
+> to the manual skill-copy and Codex installs.
 
 ### In GitHub (Action)
 
