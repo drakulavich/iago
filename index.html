@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Iago — Mermaid diagrams for AI code reviews</title>
+<meta name="description" content="Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent. Comment /iago on any PR. GitHub Action + Claude Code / Codex / Copilot / Gemini skill." />
+<meta name="theme-color" content="#0e0a1a" />
+
+<!-- Open Graph -->
+<meta property="og:title" content="Iago — Mermaid diagrams for AI code reviews" />
+<meta property="og:description" content="Comment /iago on any PR. Sequence, flow, class, ER — auto-detected from the diff." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://drakulavich.github.io/iago/" />
+
+<!-- Favicon: inline SVG parrot silhouette -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop offset='0' stop-color='%23ffb547'/><stop offset='1' stop-color='%23ff5d8f'/></linearGradient></defs><circle cx='32' cy='32' r='30' fill='%230e0a1a'/><path d='M44 18c-3-3-8-4-13-3-7 1-13 6-15 13-1 5 1 10 5 13 3 2 7 3 11 2v6h4v-6c4-1 7-3 9-6 3-4 4-9 3-13-1-3-2-5-4-6z' fill='url(%23g)'/><circle cx='40' cy='24' r='2.4' fill='%230e0a1a'/><path d='M48 25l5-2-3 4 3 1-6 1z' fill='%23ff5d8f'/></svg>" />
+
+<style>
+  /* -------- Reset & tokens -------- */
+  *, *::before, *::after { box-sizing: border-box; }
+  :root {
+    --bg: #0e0a1a;
+    --bg-2: #15102a;
+    --panel: #1b1538;
+    --panel-2: #221a45;
+    --ink: #f4ecff;
+    --ink-dim: #b9aee0;
+    --ink-mute: #7e72a6;
+    --accent: #ffb547;
+    --accent-2: #ff5d8f;
+    --accent-3: #6ee7ff;
+    --line: #2c2358;
+    --good: #6ee7b7;
+    --code-bg: #0a0716;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 30px 80px -20px rgba(0,0,0,.6);
+    --mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* Background ornaments */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(900px 500px at 10% -10%, rgba(255,93,143,.18), transparent 60%),
+      radial-gradient(700px 500px at 110% 10%, rgba(110,231,255,.15), transparent 60%),
+      radial-gradient(600px 400px at 50% 110%, rgba(255,181,71,.12), transparent 60%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* -------- Layout -------- */
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* -------- Header / Nav -------- */
+  header.site {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    background: rgba(14,10,26,.7);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--ink);
+    font-weight: 700;
+    letter-spacing: .2px;
+  }
+  .brand-mark { width: 32px; height: 32px; flex: none; }
+  .nav-links {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  .nav-links a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color .15s;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    background: var(--accent);
+    color: #1a0d00 !important;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .nav-cta:hover { background: #ffc46d; }
+
+  /* -------- Hero -------- */
+  .hero {
+    padding: 80px 0 60px;
+    position: relative;
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap: 56px;
+    align-items: center;
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255,181,71,.1);
+    border: 1px solid rgba(255,181,71,.25);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    line-height: 1.05;
+    margin: 18px 0 18px;
+    letter-spacing: -.02em;
+    font-weight: 800;
+  }
+  .hero h1 .accent {
+    background: linear-gradient(120deg, var(--accent) 0%, var(--accent-2) 60%, var(--accent-3) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .hero-lede {
+    color: var(--ink-dim);
+    font-size: 1.125rem;
+    max-width: 520px;
+    margin: 0 0 28px;
+  }
+  .hero-quote {
+    font-style: italic;
+    color: var(--ink-mute);
+    margin: 0 0 22px;
+    font-size: .95rem;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    transition: transform .12s, background .15s, border-color .15s;
+    border: 1px solid transparent;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary {
+    background: var(--accent);
+    color: #1a0d00;
+  }
+  .btn-primary:hover { background: #ffc46d; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .btn-ghost:hover { border-color: #5849a8; background: rgba(255,255,255,.03); }
+
+  /* -------- Hero mock PR card -------- */
+  .mock {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    font-size: 14px;
+  }
+  .mock-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #3a2f6a; }
+  .dot.r { background: #ff5d8f; }
+  .dot.y { background: #ffb547; }
+  .dot.g { background: #6ee7b7; }
+  .mock-title {
+    margin-left: 10px;
+    color: var(--ink-dim);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+  .mock-body {
+    padding: 18px 18px 22px;
+  }
+  .pr-comment {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    flex: none;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    color: #1a0d00;
+    font-size: 13px;
+  }
+  .avatar.bot { background: linear-gradient(135deg, var(--accent-3), #8a7bff); }
+  .pr-text { flex: 1; min-width: 0; }
+  .pr-user { font-weight: 600; }
+  .pr-meta { color: var(--ink-mute); font-size: 12px; margin-left: 6px; }
+  .pr-content {
+    margin-top: 6px;
+    color: var(--ink-dim);
+  }
+  .pr-content code {
+    background: rgba(255,255,255,.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .diagram-frame {
+    margin-top: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+  }
+  .diagram-frame h4 {
+    margin: 0 0 14px;
+    font-size: 13px;
+    color: var(--ink-mute);
+    font-weight: 500;
+  }
+  .diagram-svg { width: 100%; height: auto; display: block; }
+
+  /* -------- Sections -------- */
+  section {
+    padding: 70px 0;
+    position: relative;
+  }
+  .section-eyebrow {
+    color: var(--accent-2);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+    margin: 0 0 14px;
+    letter-spacing: -.015em;
+    font-weight: 700;
+  }
+  .section-sub {
+    color: var(--ink-dim);
+    max-width: 680px;
+    margin: 0 0 40px;
+    font-size: 1.05rem;
+  }
+
+  /* -------- How-it-picks table cards -------- */
+  .picks {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .pick {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    position: relative;
+    transition: transform .15s, border-color .15s;
+  }
+  .pick:hover { transform: translateY(-3px); border-color: #4434a0; }
+  .pick-type {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    background: rgba(255,181,71,.08);
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .pick h3 {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+  .pick p {
+    margin: 0;
+    color: var(--ink-dim);
+    font-size: 14px;
+  }
+  .pick-icon {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 14px;
+    color: var(--accent-2);
+  }
+
+  /* -------- Install tabs -------- */
+  .tabs {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .tab-list {
+    display: flex;
+    flex-wrap: wrap;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+  .tab-list button {
+    background: none;
+    border: none;
+    color: var(--ink-dim);
+    padding: 14px 18px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .tab-list button:hover { color: var(--ink); }
+  .tab-list button[aria-selected="true"] {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: rgba(255,181,71,.05);
+  }
+  .tab-list button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+  .tab-panel { display: none; padding: 24px; }
+  .tab-panel[data-active] { display: block; }
+  .tab-panel p { color: var(--ink-dim); margin: 0 0 14px; }
+
+  /* -------- Code block -------- */
+  .code {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink);
+    overflow-x: auto;
+    position: relative;
+  }
+  .code pre { margin: 0; }
+  .code .c-comment { color: #6e639a; }
+  .code .c-key { color: var(--accent-3); }
+  .code .c-str { color: var(--accent); }
+  .code .c-cmd { color: var(--accent-2); }
+  .copy-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255,255,255,.05);
+    color: var(--ink-dim);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,.1); color: var(--ink); }
+  .copy-btn.copied { color: var(--good); }
+
+  /* -------- Agents grid -------- */
+  .agents {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  .agent {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px 18px;
+    text-align: center;
+    transition: transform .15s, border-color .15s;
+  }
+  .agent:hover { transform: translateY(-3px); border-color: #4434a0; }
+  .agent-icon {
+    width: 38px;
+    height: 38px;
+    margin: 0 auto 12px;
+    color: var(--accent-3);
+  }
+  .agent h4 {
+    margin: 0 0 4px;
+    font-size: .95rem;
+    color: var(--ink);
+  }
+  .agent p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--ink-mute);
+  }
+
+  /* -------- Examples -------- */
+  .examples-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .example-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+  .example-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .example-head h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--ink);
+  }
+  .example-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(255,181,71,.08);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .example-card svg { width: 100%; height: auto; display: block; }
+
+  /* -------- Usage commands -------- */
+  .usage-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  /* -------- Footer -------- */
+  footer.site {
+    border-top: 1px solid var(--line);
+    padding: 36px 0 48px;
+    margin-top: 40px;
+    color: var(--ink-mute);
+    font-size: 14px;
+  }
+  footer.site .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  footer a {
+    color: var(--ink-dim);
+    text-decoration: none;
+  }
+  footer a:hover { color: var(--ink); }
+  .footer-links {
+    display: flex;
+    gap: 22px;
+  }
+
+  /* -------- Skip link / a11y -------- */
+  .skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+  }
+  .skip:focus {
+    left: 16px;
+    top: 16px;
+    z-index: 100;
+    background: var(--accent);
+    color: #1a0d00;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  /* -------- Responsive -------- */
+  @media (max-width: 880px) {
+    .hero { padding: 50px 0 30px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 36px; }
+    .picks { grid-template-columns: repeat(2, 1fr); }
+    .agents { grid-template-columns: repeat(2, 1fr); }
+    .examples-grid, .usage-grid { grid-template-columns: 1fr; }
+    .nav-links a:not(.nav-cta) { display: none; }
+    section { padding: 50px 0; }
+  }
+  @media (max-width: 480px) {
+    .picks { grid-template-columns: 1fr; }
+    .agents { grid-template-columns: 1fr 1fr; }
+    .tab-list button { padding: 12px 14px; font-size: 13px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      transition-duration: .001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<a href="#main" class="skip">Skip to content</a>
+
+<!-- ============ HEADER ============ -->
+<header class="site">
+  <div class="wrap nav">
+    <a class="brand" href="#">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="bg1" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#ffb547"/>
+            <stop offset="1" stop-color="#ff5d8f"/>
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="30" fill="#0e0a1a"/>
+        <path d="M44 18c-3-3-8-4-13-3-7 1-13 6-15 13-1 5 1 10 5 13 3 2 7 3 11 2v6h4v-6c4-1 7-3 9-6 3-4 4-9 3-13-1-3-2-5-4-6z" fill="url(#bg1)"/>
+        <circle cx="40" cy="24" r="2.4" fill="#0e0a1a"/>
+        <path d="M48 25l5-2-3 4 3 1-6 1z" fill="#ff5d8f"/>
+      </svg>
+      <span>Iago</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#usage">Usage</a>
+      <a href="#examples">Examples</a>
+      <a class="nav-cta" href="https://github.com/drakulavich/iago" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="hero-eyebrow">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Open source · MIT
+        </span>
+        <h1>Mermaid diagrams for <span class="accent">AI code reviews</span>.</h1>
+        <p class="hero-lede">
+          Iago perches on top of your AI reviewer and squawks a visual summary
+          of every PR — sequence, flow, class, or ER — auto-detected from the
+          diff. Driven by <em>your</em> agent, not a SaaS reviewer.
+        </p>
+        <p class="hero-quote">“Awk! Awk! Add a diagram!”</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#install">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 5v14M5 12l7 7 7-7"/>
+            </svg>
+            Install Iago
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/drakulavich/iago" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.04c-3.2.7-3.87-1.37-3.87-1.37-.52-1.32-1.27-1.67-1.27-1.67-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.76 2.68 1.25 3.34.96.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.78 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.42-2.7 5.39-5.27 5.68.42.36.78 1.06.78 2.14v3.18c0 .3.2.66.79.55C20.21 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/>
+            </svg>
+            View on GitHub
+          </a>
+        </div>
+      </div>
+
+      <!-- Mock PR comment with embedded diagram -->
+      <div class="mock" role="img" aria-label="Example pull request with an auto-generated sequence diagram">
+        <div class="mock-bar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="mock-title">github.com/your/repo · PR #42</span>
+        </div>
+        <div class="mock-body">
+          <div class="pr-comment">
+            <div class="avatar">YOU</div>
+            <div class="pr-text">
+              <span class="pr-user">you</span><span class="pr-meta">just now</span>
+              <div class="pr-content"><code>/iago</code></div>
+            </div>
+          </div>
+          <div class="pr-comment">
+            <div class="avatar bot" aria-hidden="true">🦜</div>
+            <div class="pr-text">
+              <span class="pr-user">iago-bot</span><span class="pr-meta">commented now</span>
+              <div class="diagram-frame">
+                <h4>🗺️ Change diagram — sequence</h4>
+                <svg class="diagram-svg" viewBox="0 0 360 220" aria-hidden="true">
+                  <style>
+                    .lane { fill: #ff5d8f; }
+                    .laneT { fill: #f4ecff; font: 600 11px var(--mono, monospace); }
+                    .lifeline { stroke: #4434a0; stroke-dasharray: 3 3; stroke-width: 1; }
+                    .arrow { stroke: #6ee7ff; stroke-width: 1.6; fill: none; }
+                    .arrow.dim { stroke: #ffb547; }
+                    .lbl { fill: #b9aee0; font: 500 10px var(--mono, monospace); }
+                  </style>
+                  <!-- Lanes -->
+                  <g>
+                    <rect x="20"  y="18" width="60" height="22" rx="4" class="lane" opacity=".85"/>
+                    <text x="50"  y="33" class="laneT" text-anchor="middle">User</text>
+                    <line x1="50" y1="40" x2="50" y2="200" class="lifeline"/>
+
+                    <rect x="110" y="18" width="60" height="22" rx="4" class="lane" opacity=".85"/>
+                    <text x="140" y="33" class="laneT" text-anchor="middle">PR</text>
+                    <line x1="140" y1="40" x2="140" y2="200" class="lifeline"/>
+
+                    <rect x="200" y="18" width="60" height="22" rx="4" class="lane" opacity=".85"/>
+                    <text x="230" y="33" class="laneT" text-anchor="middle">Action</text>
+                    <line x1="230" y1="40" x2="230" y2="200" class="lifeline"/>
+
+                    <rect x="290" y="18" width="50" height="22" rx="4" class="lane" opacity=".85"/>
+                    <text x="315" y="33" class="laneT" text-anchor="middle">LLM</text>
+                    <line x1="315" y1="40" x2="315" y2="200" class="lifeline"/>
+                  </g>
+
+                  <!-- Arrows -->
+                  <g>
+                    <text x="95" y="62" class="lbl">/iago</text>
+                    <path d="M50 70 L140 70" class="arrow" marker-end="url(#a1)"/>
+                    <text x="185" y="92" class="lbl">trigger</text>
+                    <path d="M140 100 L230 100" class="arrow" marker-end="url(#a1)"/>
+                    <text x="272" y="122" class="lbl">diff + prompt</text>
+                    <path d="M230 130 L315 130" class="arrow" marker-end="url(#a1)"/>
+                    <text x="270" y="152" class="lbl">mermaid</text>
+                    <path d="M315 160 L230 160" class="arrow dim" marker-end="url(#a2)"/>
+                    <text x="180" y="182" class="lbl">comment</text>
+                    <path d="M230 190 L140 190" class="arrow dim" marker-end="url(#a2)"/>
+                  </g>
+
+                  <defs>
+                    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill="#6ee7ff"/>
+                    </marker>
+                    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffb547"/>
+                    </marker>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES / DIAGRAM TYPES ============ -->
+  <section id="features">
+    <div class="wrap">
+      <div class="section-eyebrow">How it picks</div>
+      <h2 class="section-title">Four diagram types — auto-detected from the diff</h2>
+      <p class="section-sub">
+        Iago reads the diff signals first. The first match wins. Trivial
+        changes (docs, deps, formatting) are skipped — Iago abstains rather
+        than spam. You can always override: <code>/iago sequence</code>,
+        <code>/iago er</code>, etc.
+      </p>
+
+      <div class="picks">
+        <div class="pick">
+          <svg class="pick-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+            <line x1="9" y1="4"  x2="9" y2="20"/>
+          </svg>
+          <span class="pick-type">er</span>
+          <h3>Migrations &amp; schemas</h3>
+          <p>SQL files, Prisma schema, or ORM models trigger an entity-relation diagram.</p>
+        </div>
+        <div class="pick">
+          <svg class="pick-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <line x1="10" y1="6.5" x2="14" y2="6.5"/>
+            <line x1="6.5" y1="10" x2="6.5" y2="14"/>
+          </svg>
+          <span class="pick-type">class</span>
+          <h3>New types / interfaces</h3>
+          <p>Two or more OO files introducing <code>class</code>, <code>interface</code>, or <code>trait</code>.</p>
+        </div>
+        <div class="pick">
+          <svg class="pick-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="5" cy="12" r="2"/>
+            <circle cx="12" cy="6" r="2"/>
+            <circle cx="12" cy="18" r="2"/>
+            <circle cx="19" cy="12" r="2"/>
+            <line x1="7" y1="12" x2="17" y2="12"/>
+            <line x1="12" y1="8" x2="12" y2="16"/>
+          </svg>
+          <span class="pick-type">sequence</span>
+          <h3>Cross-component flow</h3>
+          <p>Handler + client + worker changes? You're getting a sequence diagram.</p>
+        </div>
+        <div class="pick">
+          <svg class="pick-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="3 12 8 7 13 12 18 7 21 10"/>
+            <polyline points="3 18 8 13 13 18 18 13 21 16"/>
+          </svg>
+          <span class="pick-type">flow</span>
+          <h3>State / branching logic</h3>
+          <p>State machines and non-trivial control flow get a flowchart.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INSTALL ============ -->
+  <section id="install" style="background: linear-gradient(180deg, transparent, rgba(255,93,143,.04) 50%, transparent);">
+    <div class="wrap">
+      <div class="section-eyebrow">Six ways to install</div>
+      <h2 class="section-title">Pick the install that fits your stack</h2>
+      <p class="section-sub">
+        Action for teams. <code>bunx</code>/<code>npx</code> for Node users.
+        <code>curl | bash</code> for everything else. Skill-folder copy for the
+        bare <code>/iago</code> name in Claude Code, Codex, Copilot, and Gemini.
+      </p>
+
+      <div class="tabs">
+        <ul class="tab-list" role="tablist">
+          <li role="presentation"><button role="tab" id="t-action"  aria-controls="p-action"  aria-selected="true"  data-tab="action">GitHub Action</button></li>
+          <li role="presentation"><button role="tab" id="t-bun"     aria-controls="p-bun"     aria-selected="false" data-tab="bun">bunx / npx</button></li>
+          <li role="presentation"><button role="tab" id="t-curl"    aria-controls="p-curl"    aria-selected="false" data-tab="curl">curl | bash</button></li>
+          <li role="presentation"><button role="tab" id="t-plugin"  aria-controls="p-plugin"  aria-selected="false" data-tab="plugin">Claude plugin</button></li>
+          <li role="presentation"><button role="tab" id="t-skill"   aria-controls="p-skill"   aria-selected="false" data-tab="skill">Skill folder</button></li>
+        </ul>
+
+        <div class="tab-panel" id="p-action" role="tabpanel" aria-labelledby="t-action" data-active>
+          <p>Drop this file into <code>.github/workflows/iago.yml</code>, push, and comment <code>/iago</code> on any PR.</p>
+          <div class="code">
+            <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
+<pre><span class="c-key">name</span>: Iago
+<span class="c-key">on</span>:
+  <span class="c-key">issue_comment</span>:
+    <span class="c-key">types</span>: [created]
+<span class="c-key">permissions</span>:
+  <span class="c-key">pull-requests</span>: write
+  <span class="c-key">contents</span>: read
+<span class="c-key">jobs</span>:
+  <span class="c-key">iago</span>:
+    <span class="c-key">if</span>: github.event.issue.pull_request &amp;&amp; startsWith(github.event.comment.body, <span class="c-str">'/iago'</span>)
+    <span class="c-key">runs-on</span>: ubuntu-latest
+    <span class="c-key">steps</span>:
+      - <span class="c-key">uses</span>: drakulavich/iago@v0.1.0
+        <span class="c-key">with</span>:
+          <span class="c-comment"># Optional — heuristic fallback works without a key:</span>
+          <span class="c-key">anthropic-api-key</span>: ${{ secrets.ANTHROPIC_API_KEY }}</pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="p-bun" role="tabpanel" aria-labelledby="t-bun">
+          <p>Friendliest path. Auto-detects Claude, Codex, Copilot, and Gemini. Re-run to update.</p>
+          <div class="code">
+            <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
+<pre><span class="c-cmd">bunx</span> @drakulavich/iago install --force
+<span class="c-cmd">npx</span>  @drakulavich/iago install --force
+
+<span class="c-comment"># Diagnostics &amp; targeted install:</span>
+<span class="c-cmd">bunx</span> @drakulavich/iago doctor
+<span class="c-cmd">bunx</span> @drakulavich/iago install --target=both
+<span class="c-cmd">bunx</span> @drakulavich/iago uninstall --target=claude</pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="p-curl" role="tabpanel" aria-labelledby="t-curl">
+          <p>For systems without Node or Bun. Pure shell, same behavior. Re-run to update; add <code>--uninstall</code> to remove.</p>
+          <div class="code">
+            <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
+<pre><span class="c-cmd">curl</span> -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh \
+  | <span class="c-cmd">bash</span> -s -- --force</pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="p-plugin" role="tabpanel" aria-labelledby="t-plugin">
+          <p>Install via the Claude Code plugin marketplace. Plugin skills are namespaced as <code>/iago:iago</code> and <code>/iago:squawk</code>.</p>
+          <div class="code">
+            <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
+<pre>/plugin marketplace add drakulavich/iago
+/plugin install iago@iago-marketplace
+/reload-plugins</pre>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="p-skill" role="tabpanel" aria-labelledby="t-skill">
+          <p>Copy the skill folders directly. Gives you the bare <code>/iago</code> and <code>/squawk</code> names — no plugin namespace.</p>
+          <div class="code">
+            <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
+<pre><span class="c-cmd">git</span> clone https://github.com/drakulavich/iago /tmp/iago-skill
+<span class="c-cmd">cp</span> -R /tmp/iago-skill/iago    ~/.claude/skills/iago
+<span class="c-cmd">cp</span> -R /tmp/iago-skill/squawk  ~/.claude/skills/squawk
+<span class="c-cmd">rm</span> -rf /tmp/iago-skill</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ USAGE ============ -->
+  <section id="usage">
+    <div class="wrap">
+      <div class="section-eyebrow">Usage</div>
+      <h2 class="section-title">One command. Five aliases. Predictable behavior.</h2>
+      <p class="section-sub">
+        Run <code>/review</code> first, then <code>/iago</code> — Iago finds
+        the review comment via the <code>&lt;!-- review-skill --&gt;</code>
+        marker (or falls back to “most recent comment starting with
+        <code># Review</code>”) and appends the diagram.
+      </p>
+
+      <div class="usage-grid">
+        <div>
+          <h3 style="margin:0 0 10px;font-size:1rem;color:var(--ink-dim);">In Claude Code / Codex</h3>
+          <div class="code">
+            <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
+<pre><span class="c-cmd">/iago</span>                   <span class="c-comment"># auto-detect PR + type</span>
+<span class="c-cmd">/iago</span> 230               <span class="c-comment"># explicit PR number</span>
+<span class="c-cmd">/iago</span> 230 sequence      <span class="c-comment"># override type</span>
+<span class="c-cmd">/iago</span> --mode=comment    <span class="c-comment"># standalone comment</span>
+
+<span class="c-cmd">/squawk</span>                 <span class="c-comment"># alias</span></pre>
+          </div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 10px;font-size:1rem;color:var(--ink-dim);">In a PR (Action)</h3>
+          <div class="code">
+            <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
+<pre><span class="c-cmd">/iago</span>
+<span class="c-cmd">/iago</span> er
+<span class="c-cmd">/iago</span> flow --mode=comment
+
+<span class="c-comment"># Iago reacts 👀 → works → 🚀 or 😕</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ AGENTS ============ -->
+  <section id="agents" style="background: linear-gradient(180deg, transparent, rgba(110,231,255,.04) 50%, transparent);">
+    <div class="wrap">
+      <div class="section-eyebrow">Supported agents</div>
+      <h2 class="section-title">Bring your own agent</h2>
+      <p class="section-sub">
+        Iago is an open standard built on the <code>SKILL.md</code> format —
+        the same skill works across every major CLI agent, plus straight-up
+        GitHub Actions.
+      </p>
+
+      <div class="agents">
+        <div class="agent">
+          <svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 4h16v16H4z"/>
+            <path d="M9 9h6v6H9z"/>
+          </svg>
+          <h4>GitHub Action</h4>
+          <p>Comment <code>/iago</code> on any PR</p>
+        </div>
+        <div class="agent">
+          <svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+          <h4>Claude Code</h4>
+          <p>Skill or plugin install</p>
+        </div>
+        <div class="agent">
+          <svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="3"/>
+            <path d="M8 12l3 2 5-4"/>
+          </svg>
+          <h4>Codex CLI</h4>
+          <p><code>$iago</code> / <code>$squawk</code></p>
+        </div>
+        <div class="agent">
+          <svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3 3"/>
+          </svg>
+          <h4>Copilot CLI</h4>
+          <p><code>.github/skills/</code></p>
+        </div>
+        <div class="agent">
+          <svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="12 2 19 21 12 17 5 21"/>
+          </svg>
+          <h4>Gemini CLI</h4>
+          <p><code>.gemini/skills/</code></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ EXAMPLES ============ -->
+  <section id="examples">
+    <div class="wrap">
+      <div class="section-eyebrow">What you get</div>
+      <h2 class="section-title">Real Mermaid output — rendered right in the PR</h2>
+      <p class="section-sub">
+        These are simplified previews of the four diagram types Iago emits.
+        On GitHub, they render as native Mermaid blocks inside the
+        <code>/review</code> comment.
+      </p>
+
+      <div class="examples-grid">
+        <!-- Sequence -->
+        <article class="example-card">
+          <div class="example-head">
+            <h3>Sequence</h3>
+            <span class="example-tag">sequenceDiagram</span>
+          </div>
+          <svg viewBox="0 0 360 180" aria-label="Sequence diagram example">
+            <defs>
+              <marker id="seq-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#6ee7ff"/>
+              </marker>
+            </defs>
+            <g font-family="ui-monospace, monospace" font-size="11">
+              <rect x="20"  y="10" width="64" height="22" rx="4" fill="#ff5d8f"/><text x="52"  y="25" fill="#fff" text-anchor="middle">CLI</text>
+              <rect x="120" y="10" width="64" height="22" rx="4" fill="#ff5d8f"/><text x="152" y="25" fill="#fff" text-anchor="middle">Session</text>
+              <rect x="220" y="10" width="64" height="22" rx="4" fill="#ff5d8f"/><text x="252" y="25" fill="#fff" text-anchor="middle">Engine</text>
+              <line x1="52"  y1="32" x2="52"  y2="170" stroke="#4434a0" stroke-dasharray="3 3"/>
+              <line x1="152" y1="32" x2="152" y2="170" stroke="#4434a0" stroke-dasharray="3 3"/>
+              <line x1="252" y1="32" x2="252" y2="170" stroke="#4434a0" stroke-dasharray="3 3"/>
+              <text x="100" y="55"  fill="#b9aee0">start()</text>
+              <path d="M52 62 L152 62" stroke="#6ee7ff" stroke-width="1.6" marker-end="url(#seq-arr)"/>
+              <text x="200" y="85"  fill="#b9aee0">ensure(voice)</text>
+              <path d="M152 92 L252 92" stroke="#6ee7ff" stroke-width="1.6" marker-end="url(#seq-arr)"/>
+              <text x="200" y="115" fill="#b9aee0">pcm</text>
+              <path d="M252 122 L152 122" stroke="#ffb547" stroke-width="1.6" marker-end="url(#seq-arr)"/>
+              <text x="100" y="145" fill="#b9aee0">opus bytes</text>
+              <path d="M152 152 L52 152" stroke="#ffb547" stroke-width="1.6" marker-end="url(#seq-arr)"/>
+            </g>
+          </svg>
+        </article>
+
+        <!-- Flow -->
+        <article class="example-card">
+          <div class="example-head">
+            <h3>Flow</h3>
+            <span class="example-tag">flowchart TD</span>
+          </div>
+          <svg viewBox="0 0 360 200" aria-label="Flow diagram example">
+            <defs>
+              <marker id="fl-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffb547"/>
+              </marker>
+            </defs>
+            <g font-family="ui-monospace, monospace" font-size="11" fill="#f4ecff">
+              <rect x="130" y="10"  width="100" height="28" rx="14" fill="#4434a0"/><text x="180" y="29" text-anchor="middle">read line</text>
+              <polygon points="180,55 240,82 180,110 120,82" fill="#221a45" stroke="#ffb547"/><text x="180" y="86" text-anchor="middle">empty?</text>
+              <rect x="20"  y="125" width="100" height="28" rx="6" fill="#4434a0"/><text x="70"  y="144" text-anchor="middle">vosk-tts-rs</text>
+              <rect x="240" y="125" width="100" height="28" rx="6" fill="#4434a0"/><text x="290" y="144" text-anchor="middle">misaki G2P</text>
+              <rect x="130" y="165" width="100" height="28" rx="6" fill="#ff5d8f"/><text x="180" y="184" text-anchor="middle">opus encode</text>
+              <path d="M180 38 L180 55"   stroke="#ffb547" stroke-width="1.6" marker-end="url(#fl-arr)"/>
+              <path d="M120 82 L70 125"   stroke="#ffb547" stroke-width="1.6" marker-end="url(#fl-arr)"/>
+              <path d="M240 82 L290 125"  stroke="#ffb547" stroke-width="1.6" marker-end="url(#fl-arr)"/>
+              <path d="M70 153 L150 165"  stroke="#ffb547" stroke-width="1.6" marker-end="url(#fl-arr)"/>
+              <path d="M290 153 L210 165" stroke="#ffb547" stroke-width="1.6" marker-end="url(#fl-arr)"/>
+              <text x="100" y="106" fill="#b9aee0" font-size="9">ru</text>
+              <text x="252" y="106" fill="#b9aee0" font-size="9">en</text>
+            </g>
+          </svg>
+        </article>
+
+        <!-- Class -->
+        <article class="example-card">
+          <div class="example-head">
+            <h3>Class</h3>
+            <span class="example-tag">classDiagram</span>
+          </div>
+          <svg viewBox="0 0 360 200" aria-label="Class diagram example">
+            <g font-family="ui-monospace, monospace" font-size="11" fill="#f4ecff">
+              <rect x="120" y="10" width="120" height="50" rx="4" fill="#221a45" stroke="#ff5d8f"/>
+              <text x="180" y="26" text-anchor="middle" font-style="italic" fill="#ffb547">«interface»</text>
+              <text x="180" y="42" text-anchor="middle">TtsEngine</text>
+              <line x1="120" y1="48" x2="240" y2="48" stroke="#4434a0"/>
+              <text x="128" y="58" font-size="9" fill="#b9aee0">+synthesize(text)</text>
+
+              <rect x="20"  y="120" width="130" height="60" rx="4" fill="#221a45" stroke="#6ee7ff"/>
+              <text x="85"  y="138" text-anchor="middle">VoskTtsEngine</text>
+              <line x1="20" y1="146" x2="150" y2="146" stroke="#4434a0"/>
+              <text x="28" y="158" font-size="9" fill="#b9aee0">-modelPath: string</text>
+              <text x="28" y="170" font-size="9" fill="#b9aee0">+synthesize(text)</text>
+
+              <rect x="210" y="120" width="130" height="60" rx="4" fill="#221a45" stroke="#6ee7ff"/>
+              <text x="275" y="138" text-anchor="middle">KokoroEngine</text>
+              <line x1="210" y1="146" x2="340" y2="146" stroke="#4434a0"/>
+              <text x="218" y="158" font-size="9" fill="#b9aee0">-voice: string</text>
+              <text x="218" y="170" font-size="9" fill="#b9aee0">+synthesize(text)</text>
+
+              <path d="M85 120 L155 75 L180 60" stroke="#ff5d8f" fill="none" stroke-width="1.4"/>
+              <path d="M275 120 L205 75 L180 60" stroke="#ff5d8f" fill="none" stroke-width="1.4"/>
+              <polygon points="180,60 174,72 186,72" fill="#221a45" stroke="#ff5d8f"/>
+            </g>
+          </svg>
+        </article>
+
+        <!-- ER -->
+        <article class="example-card">
+          <div class="example-head">
+            <h3>Entity-Relation</h3>
+            <span class="example-tag">erDiagram</span>
+          </div>
+          <svg viewBox="0 0 360 200" aria-label="Entity relation diagram example">
+            <g font-family="ui-monospace, monospace" font-size="11" fill="#f4ecff">
+              <rect x="20"  y="40"  width="100" height="60" rx="4" fill="#221a45" stroke="#6ee7ff"/>
+              <text x="70"  y="58"  text-anchor="middle" fill="#ffb547">USER</text>
+              <line x1="20" y1="66" x2="120" y2="66" stroke="#4434a0"/>
+              <text x="28" y="80" font-size="9" fill="#b9aee0">id PK</text>
+              <text x="28" y="92" font-size="9" fill="#b9aee0">email</text>
+
+              <rect x="130" y="40"  width="100" height="60" rx="4" fill="#221a45" stroke="#6ee7ff"/>
+              <text x="180" y="58"  text-anchor="middle" fill="#ffb547">VOICE_NOTE</text>
+              <line x1="130" y1="66" x2="230" y2="66" stroke="#4434a0"/>
+              <text x="138" y="80" font-size="9" fill="#b9aee0">id PK</text>
+              <text x="138" y="92" font-size="9" fill="#b9aee0">user_id FK</text>
+
+              <rect x="240" y="40" width="100" height="60" rx="4" fill="#221a45" stroke="#6ee7ff"/>
+              <text x="290" y="58" text-anchor="middle" fill="#ffb547">AUDIO_BLOB</text>
+              <line x1="240" y1="66" x2="340" y2="66" stroke="#4434a0"/>
+              <text x="248" y="80" font-size="9" fill="#b9aee0">voice_note_id PK</text>
+              <text x="248" y="92" font-size="9" fill="#b9aee0">data bytea</text>
+
+              <rect x="130" y="130" width="100" height="50" rx="4" fill="#221a45" stroke="#6ee7ff"/>
+              <text x="180" y="148" text-anchor="middle" fill="#ffb547">VOICE</text>
+              <line x1="130" y1="156" x2="230" y2="156" stroke="#4434a0"/>
+              <text x="138" y="170" font-size="9" fill="#b9aee0">lang, name</text>
+
+              <line x1="120" y1="70" x2="130" y2="70" stroke="#ff5d8f" stroke-width="1.6"/>
+              <line x1="230" y1="70" x2="240" y2="70" stroke="#ff5d8f" stroke-width="1.6"/>
+              <line x1="180" y1="100" x2="180" y2="130" stroke="#ff5d8f" stroke-width="1.6"/>
+
+              <text x="125" y="62" font-size="9" fill="#6ee7ff">1</text>
+              <text x="128" y="80" font-size="9" fill="#6ee7ff">∞</text>
+              <text x="232" y="62" font-size="9" fill="#6ee7ff">1</text>
+              <text x="235" y="80" font-size="9" fill="#6ee7ff">1</text>
+            </g>
+          </svg>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section id="cta" style="text-align:center; padding-bottom: 100px;">
+    <div class="wrap">
+      <h2 class="section-title" style="margin-bottom: 16px;">Give your reviewer a beak.</h2>
+      <p style="color: var(--ink-dim); max-width: 560px; margin: 0 auto 30px; font-size: 1.05rem;">
+        Open source, MIT-licensed, and offline-friendly (heuristic fallback
+        works without an API key). The fastest way to add visual context to
+        every PR your agent already reviews.
+      </p>
+      <div class="hero-actions" style="justify-content: center;">
+        <a class="btn btn-primary" href="https://github.com/drakulavich/iago" rel="noopener">
+          Get Iago on GitHub →
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/drakulavich/iago#readme" rel="noopener">
+          Read the docs
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="site">
+  <div class="wrap">
+    <div>
+      <span style="color: var(--ink-dim);">🦜 Iago</span>
+      &nbsp;·&nbsp;
+      MIT License &nbsp;·&nbsp;
+      Built by <a href="https://github.com/drakulavich" rel="noopener">@drakulavich</a>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/drakulavich/iago" rel="noopener">GitHub</a>
+      <a href="https://github.com/drakulavich/iago/issues" rel="noopener">Issues</a>
+      <a href="https://github.com/drakulavich/iago/blob/main/LICENSE" rel="noopener">License</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // -------- Tabs --------
+  (function () {
+    var buttons = document.querySelectorAll('.tab-list button[role="tab"]');
+    var panels  = document.querySelectorAll('.tab-panel');
+
+    function activate(tab) {
+      buttons.forEach(function (b) {
+        var active = b.dataset.tab === tab;
+        b.setAttribute('aria-selected', active ? 'true' : 'false');
+        b.tabIndex = active ? 0 : -1;
+      });
+      panels.forEach(function (p) {
+        if (p.id === 'p-' + tab) p.setAttribute('data-active', '');
+        else p.removeAttribute('data-active');
+      });
+    }
+
+    buttons.forEach(function (b, i) {
+      b.addEventListener('click', function () { activate(b.dataset.tab); });
+      b.addEventListener('keydown', function (e) {
+        var idx = i;
+        if (e.key === 'ArrowRight') idx = (i + 1) % buttons.length;
+        else if (e.key === 'ArrowLeft') idx = (i - 1 + buttons.length) % buttons.length;
+        else return;
+        e.preventDefault();
+        buttons[idx].focus();
+        activate(buttons[idx].dataset.tab);
+      });
+    });
+  })();
+
+  // -------- Copy buttons --------
+  (function () {
+    document.querySelectorAll('.copy-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var pre = btn.parentElement.querySelector('pre');
+        if (!pre) return;
+        var text = pre.innerText;
+        var done = function () {
+          btn.textContent = 'Copied';
+          btn.classList.add('copied');
+          setTimeout(function () {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 1400);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () {
+            btn.textContent = 'Press ⌘C';
+          });
+        } else {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); done(); } catch (_) {}
+          document.body.removeChild(ta);
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>

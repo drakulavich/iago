@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>404 — Iago</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='%230e0a1a'/><path d='M44 18c-3-3-8-4-13-3-7 1-13 6-15 13-1 5 1 10 5 13 3 2 7 3 11 2v6h4v-6c4-1 7-3 9-6 3-4 4-9 3-13-1-3-2-5-4-6z' fill='%23ffb547'/></svg>" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: #0e0a1a;
+    color: #f4ecff;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    background-image:
+      radial-gradient(700px 500px at 50% -10%, rgba(255,93,143,.2), transparent 60%),
+      radial-gradient(600px 400px at 50% 110%, rgba(110,231,255,.15), transparent 60%);
+  }
+  .card {
+    text-align: center;
+    padding: 40px 32px;
+  }
+  .parrot { font-size: 4rem; margin: 0 0 8px; }
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin: 0 0 12px;
+    background: linear-gradient(120deg, #ffb547, #ff5d8f);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  p { color: #b9aee0; margin: 0 0 24px; }
+  a {
+    display: inline-block;
+    background: #ffb547;
+    color: #1a0d00;
+    padding: 12px 22px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background .15s;
+  }
+  a:hover { background: #ffc46d; }
+  .quote {
+    margin-top: 28px;
+    color: #7e72a6;
+    font-style: italic;
+    font-size: .9rem;
+  }
+</style>
+</head>
+<body>
+  <main class="card">
+    <p class="parrot" aria-hidden="true">🦜</p>
+    <h1>404</h1>
+    <p>This page didn't perch here. Iago hasn't seen it either.</p>
+    <a href="/">← Back to Iago</a>
+    <p class="quote">“Awk! Awk! Wrong branch!”</p>
+  </main>
+</body>
+</html>
