@@ -103,11 +103,18 @@ Re-run to update. Add `--uninstall` to remove. Run with `--help` for all flags.
 
 ### Option 4 — Claude Code (skill)
 
-Via the Claude Code marketplace:
+Via your own marketplace (works today):
 
 ```bash
 /plugin marketplace add drakulavich/iago
 /plugin install iago@iago-marketplace
+```
+
+Or, once accepted into Anthropic's community marketplace:
+
+```bash
+/plugin marketplace add anthropics/claude-plugins-community
+/plugin install iago@claude-community
 ```
 
 Or manually:
