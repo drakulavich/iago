@@ -72,3 +72,18 @@ jobs:
         run: bun run typecheck
       - name: Test
         run: bun test
+
+  validate:
+    name: plugin validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate marketplace + plugin manifests
+        # validate is offline (no API call / no auth needed); --strict fails on
+        # unrecognized fields and missing metadata.
+        run: claude plugin validate . --strict
