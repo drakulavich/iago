@@ -483,6 +483,16 @@
     border-radius: 4px;
   }
   .example-card svg { width: 100%; height: auto; display: block; }
+  .example-card p { margin: 0; color: var(--ink-dim); font-size: 14px; }
+  .example-card p code {
+    background: rgba(255,255,255,.06);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--accent-3);
+  }
+  .example-card p strong { color: var(--ink); font-weight: 600; }
 
   /* -------- Usage commands -------- */
   .usage-grid {
@@ -585,6 +595,7 @@
       <a href="#features">Features</a>
       <a href="#install">Install</a>
       <a href="#usage">Usage</a>
+      <a href="#use-cases">Use cases</a>
       <a href="#examples">Examples</a>
       <a class="nav-cta" href="https://github.com/drakulavich/iago" rel="noopener">GitHub</a>
     </nav>
@@ -892,6 +903,88 @@
 <span class="c-comment"># Iago reacts 👀 → works → 🚀 or 😕</span></pre>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ USE CASES ============ -->
+  <section id="use-cases" style="background: linear-gradient(180deg, transparent, rgba(255,181,71,.04) 50%, transparent);">
+    <div class="wrap">
+      <div class="section-eyebrow">Use cases</div>
+      <h2 class="section-title">When to let Iago squawk</h2>
+      <p class="section-sub">
+        Reach for Iago whenever a diff is easier to grasp as a picture than as a
+        wall of green and red. A few of the moments it was built for:
+      </p>
+
+      <div class="examples-grid">
+        <article class="example-card">
+          <div class="example-head">
+            <h3>Trace a request flow</h3>
+            <span class="example-tag">/iago</span>
+          </div>
+          <p>
+            A PR touches a handler, a client, and a worker. Run <code>/review</code>,
+            then <code>/iago</code> — it appends a <strong>sequence</strong> diagram
+            of the new cross-component path right under the review.
+          </p>
+        </article>
+
+        <article class="example-card">
+          <div class="example-head">
+            <h3>Review a schema change</h3>
+            <span class="example-tag">/iago er</span>
+          </div>
+          <p>
+            A migration or <code>schema.prisma</code> change auto-detects to an
+            <strong>entity-relation</strong> diagram of the new tables and keys —
+            no more eyeballing column lists.
+          </p>
+        </article>
+
+        <article class="example-card">
+          <div class="example-head">
+            <h3>Map new types</h3>
+            <span class="example-tag">/iago class</span>
+          </div>
+          <p>
+            Several new classes or interfaces land in one PR. Iago draws a
+            <strong>class</strong> diagram so reviewers see the hierarchy at a glance.
+          </p>
+        </article>
+
+        <article class="example-card">
+          <div class="example-head">
+            <h3>Chart branching logic</h3>
+            <span class="example-tag">/iago flow</span>
+          </div>
+          <p>
+            A new state machine or a gnarly conditional? Force a <strong>flowchart</strong>
+            to make the control flow reviewable instead of guessable.
+          </p>
+        </article>
+
+        <article class="example-card">
+          <div class="example-head">
+            <h3>CI-native, no CLI</h3>
+            <span class="example-tag">GitHub Action</span>
+          </div>
+          <p>
+            With the Action installed, anyone on the team just comments
+            <code>/iago</code> on a PR. Iago reacts 👀 → works → 🚀 — no local setup.
+          </p>
+        </article>
+
+        <article class="example-card">
+          <div class="example-head">
+            <h3>Target &amp; override</h3>
+            <span class="example-tag">/iago 230 sequence</span>
+          </div>
+          <p>
+            Point Iago at a specific PR and force the diagram type when you already
+            know the shape you want — auto-detection is a default, not a cage.
+          </p>
+        </article>
       </div>
     </div>
   </section>
