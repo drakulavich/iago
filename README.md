@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://github.com/drakulavich/iago/actions/workflows/test.yml"><img src="https://github.com/drakulavich/iago/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+  <a href="https://github.com/drakulavich/iago/blob/main/BENCHMARKS.md"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdrakulavich%2Fiago%2Fmain%2Fevals%2Fbadge.json" alt="selection accuracy"></a>
   <a href="https://www.npmjs.com/package/@drakulavich/iago"><img src="https://img.shields.io/npm/v/@drakulavich/iago" alt="npm version"></a>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://bun.sh"><img src="https://img.shields.io/badge/runtime-Bun-f9f1e1?logo=bun" alt="Bun"></a>
@@ -289,6 +290,15 @@ tests against macOS's stock bash 3.2 (catches portability regressions in
 `install.sh`) and against macOS's BSD `tar` (catches differences from GNU tar
 in the TS extractor). Tests are offline (no network) thanks to the
 `IAGO_LOCAL_TARBALL` hook — honored by both `install.sh` and the TS CLI.
+
+## Benchmarks
+
+Iago's diagram-type selection, abstention, and heuristic Mermaid validity are
+benchmarked deterministically in CI. Full methodology: [`BENCHMARKS.md`](BENCHMARKS.md).
+
+<!-- eval:results:start -->
+_Run `python evals/run.py` to populate._
+<!-- eval:results:end -->
 
 ## License
 
