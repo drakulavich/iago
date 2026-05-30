@@ -1,0 +1,8 @@
+{
+  "id": "abstain-tiny",
+  "expected": "abstain",
+  "source": "synthetic",
+  "provenance": null,
+  "files": [{"filename": "src/config.ts", "additions": 3, "deletions": 1}],
+  "diff_text": "diff --git a/src/config.ts b/src/config.ts\n+++ b/src/config.ts\n+export const TIMEOUT = 5000;\n"
+}

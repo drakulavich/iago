@@ -1,0 +1,8 @@
+{
+  "id": "flow-state-branching",
+  "expected": "flow",
+  "source": "synthetic",
+  "provenance": null,
+  "files": [{"filename": "src/retry.ts", "additions": 14, "deletions": 1}],
+  "diff_text": "diff --git a/src/retry.ts b/src/retry.ts\n+++ b/src/retry.ts\n+function step(state) {\n+  if (state === 'idle') return 'running';\n+  if (state === 'running') {\n+    return ok() ? 'done' : 'failed';\n+  }\n+  if (state === 'failed' && retries < max) {\n+    retries++;\n+    return 'running';\n+  }\n+  return state;\n+}\n"
+}

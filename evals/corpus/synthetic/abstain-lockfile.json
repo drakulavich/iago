@@ -1,0 +1,8 @@
+{
+  "id": "abstain-lockfile",
+  "expected": "abstain",
+  "source": "synthetic",
+  "provenance": null,
+  "files": [{"filename": "package-lock.json", "additions": 420, "deletions": 18}],
+  "diff_text": "diff --git a/package-lock.json b/package-lock.json\n+++ b/package-lock.json\n+ dependency bumps\n"
+}

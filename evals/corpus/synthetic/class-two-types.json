@@ -1,0 +1,11 @@
+{
+  "id": "class-two-types",
+  "expected": "class",
+  "source": "synthetic",
+  "provenance": null,
+  "files": [
+    {"filename": "src/engine/base.ts", "additions": 8, "deletions": 0},
+    {"filename": "src/engine/kokoro.ts", "additions": 9, "deletions": 0}
+  ],
+  "diff_text": "diff --git a/src/engine/base.ts b/src/engine/base.ts\n+++ b/src/engine/base.ts\n+interface TtsEngine {\n+  synthesize(text: string): Promise<Buffer>;\n+}\ndiff --git a/src/engine/kokoro.ts b/src/engine/kokoro.ts\n+++ b/src/engine/kokoro.ts\n+class KokoroEngine implements TtsEngine {\n+  async synthesize(text: string) { return Buffer.from(text); }\n+}\n"
+}

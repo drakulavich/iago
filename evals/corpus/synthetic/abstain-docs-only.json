@@ -1,0 +1,8 @@
+{
+  "id": "abstain-docs-only",
+  "expected": "abstain",
+  "source": "synthetic",
+  "provenance": null,
+  "files": [{"filename": "README.md", "additions": 60, "deletions": 4}],
+  "diff_text": "diff --git a/README.md b/README.md\n+++ b/README.md\n+lots of prose changes\n"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "sequence-handler-client-worker",
+  "expected": "sequence",
+  "source": "synthetic",
+  "provenance": null,
+  "files": [
+    {"filename": "api/routes/orders.ts", "additions": 7, "deletions": 0},
+    {"filename": "lib/client/payments.ts", "additions": 6, "deletions": 0},
+    {"filename": "workers/fulfilment.ts", "additions": 6, "deletions": 0}
+  ],
+  "diff_text": "diff --git a/api/routes/orders.ts b/api/routes/orders.ts\n+++ b/api/routes/orders.ts\n+router.post('/orders', async (req, res) => {\n+  const charge = await paymentsClient.charge(req.body);\n+  await queue.publish('fulfil', charge.id);\n+});\ndiff --git a/lib/client/payments.ts b/lib/client/payments.ts\n+++ b/lib/client/payments.ts\n+export async function charge(o) { return fetch('/pay'); }\ndiff --git a/workers/fulfilment.ts b/workers/fulfilment.ts\n+++ b/workers/fulfilment.ts\n+queue.consume('fulfil', async (id) => ship(id));\n"
+}

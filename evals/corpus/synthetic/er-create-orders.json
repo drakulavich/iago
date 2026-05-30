@@ -1,0 +1,8 @@
+{
+  "id": "er-create-orders",
+  "expected": "er",
+  "source": "synthetic",
+  "provenance": null,
+  "files": [{"filename": "migrations/003_orders.sql", "additions": 16, "deletions": 0}],
+  "diff_text": "diff --git a/migrations/003_orders.sql b/migrations/003_orders.sql\n+++ b/migrations/003_orders.sql\n+CREATE TABLE orders (\n+  id SERIAL PRIMARY KEY,\n+  user_id INTEGER NOT NULL,\n+  total NUMERIC(10,2) NOT NULL,\n+  FOREIGN KEY (user_id) REFERENCES users(id)\n+);\n+ALTER TABLE users ADD COLUMN last_order_at TIMESTAMP;\n"
+}
