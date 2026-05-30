@@ -1,17 +1,22 @@
-# 🦜 Iago
+<p align="center">🦜</p>
 
-> _"Awk! Awk! Add a diagram!"_
+<h1 align="center">Iago</h1>
 
-**Greptile-style Mermaid diagrams for AI code reviews — but driven by your own
-agent.** Iago perches on top of a `/review` comment and squawks a visual
-summary of the change: sequence, flow, class, or entity-relation.
+<p align="center">
+  <a href="https://github.com/drakulavich/iago/actions/workflows/test.yml"><img src="https://github.com/drakulavich/iago/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+  <a href="https://www.npmjs.com/package/@drakulavich/iago"><img src="https://img.shields.io/npm/v/@drakulavich/iago" alt="npm version"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/runtime-Bun-f9f1e1?logo=bun" alt="Bun"></a>
+</p>
 
-Works as:
+<p align="center"><b>Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent.</b><br>Iago perches on top of a <code>/review</code> comment and squawks a visual summary of the change: sequence, flow, class, or entity-relation.</p>
 
-- 🤖 **GitHub Action** — comment `/iago` on any PR (no CLI needed).
-- 💻 **Claude Code skill** — `/iago` in your terminal.
-- 🦦 **Codex CLI skill** — same skill, same standard.
-- 🪞 Aliased as **`/squawk`** in all three.
+<p align="center"><i>"Awk! Awk! Add a diagram!"</i></p>
+
+- **GitHub Action** — comment `/iago` on any PR; no CLI needed.
+- **Claude Code skill** — run `/iago` in your terminal, aliased as `/squawk`.
+- **Codex / Copilot / Gemini** — the same `SKILL.md`, the same open standard.
+- **Offline-friendly** — a heuristic fallback draws a diagram with no API key.
 
 > _Demo GIF coming soon — will live here:_ `docs/demo.gif`
 
@@ -287,4 +292,4 @@ in the TS extractor). Tests are offline (no network) thanks to the
 
 ## License
 
-MIT.
+Made with 🦜 squawks and zero SaaS lock-in, under the MIT License.
