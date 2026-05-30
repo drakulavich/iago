@@ -18,8 +18,6 @@
 - **Your agent draws it** — Iago uses the LLM you're already running. No extra API key, no SaaS reviewer.
 - **Type auto-detected** — sequence, flow, class, or entity-relation, picked from the diff. Override anytime.
 
-> _Demo GIF coming soon — will live here:_ `docs/demo.gif`
-
 ---
 
 ## Why?
@@ -50,6 +48,8 @@ Full rubric: [`iago/references/diagram-selection.md`](iago/references/diagram-se
 
 Iago is a skill for your coding agent. Pick the install that fits your stack.
 
+**Runtime requirements:** `bun` (runs the helper) and `gh` (authenticated, for the GitHub write).
+
 ### Option 1 — Node / Bun (recommended)
 
 If you have Node ≥18 or Bun, this is the friendliest path — no `curl | bash`,
@@ -66,13 +66,14 @@ Re-run the same command to update. Other commands:
 ```bash
 bunx @drakulavich/iago doctor                # show install paths and versions
 bunx @drakulavich/iago install --target=both # install into all agent dirs
-bunx @drakulavich/iago install --version=v0.1.1
+bunx @drakulavich/iago install --version=v0.2.0
 bunx @drakulavich/iago uninstall --target=claude
 ```
 
 ### Option 2 — curl | bash
 
-For systems without Node/Bun. Same behavior, pure shell:
+Installs the skill without the npm CLI (pure shell). Note: running Iago itself
+needs `bun` + `gh` on your machine.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | bash -s -- --force
@@ -184,7 +185,8 @@ iago/
 │   └── plugin.json                     # Plugin manifest
 ├── iago/
 │   ├── SKILL.md                        # Main skill
-│   ├── scripts/post.ts                  # Posts / appends the diagram to the PR (bun)
+│   ├── scripts/post.ts                 # Posts / appends the diagram to the PR (bun)
+│   ├── scripts/sanitize.ts             # Mermaid sequence-label sanitizer
 │   ├── references/
 │   │   ├── diagram-selection.md        # Rubric for picking the diagram type
 │   │   └── mermaid-templates.md
@@ -214,7 +216,7 @@ shellcheck install.sh
 ```bash
 cd cli
 bun install
-bun test                               # tests, ~700ms
+bun test                               # cli + skill helper (post.ts / sanitize.ts) tests
 bun run typecheck                      # tsc --noEmit
 bun run dev install --target=claude --dry-run
 ```
