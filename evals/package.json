@@ -1,0 +1,9 @@
+{
+  "name": "iago-evals",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "jsdom": "^24.0.0",
+    "mermaid": "^10.9.0"
+  }
+}
