@@ -297,7 +297,16 @@ Iago's diagram-type selection, abstention, and heuristic Mermaid validity are
 benchmarked deterministically in CI. Full methodology: [`BENCHMARKS.md`](BENCHMARKS.md).
 
 <!-- eval:results:start -->
-_Run `python evals/run.py` to populate._
+**Selection accuracy:** 100% (7 cases)  
+**Mermaid validity (heuristic):** 4/4 parse  
+
+| Type | Precision | Recall | F1 | Support |
+|---|---|---|---|---|
+| `sequence` | 100% | 100% | 100% | 1 |
+| `flow` | 100% | 100% | 100% | 1 |
+| `class` | 100% | 100% | 100% | 1 |
+| `er` | 100% | 100% | 100% | 1 |
+| `abstain` | 100% | 100% | 100% | 3 |
 <!-- eval:results:end -->
 
 ## License

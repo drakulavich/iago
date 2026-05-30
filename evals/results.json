@@ -1,0 +1,52 @@
+{
+  "corpus": {
+    "by_expected": {
+      "abstain": 3,
+      "class": 1,
+      "er": 1,
+      "flow": 1,
+      "sequence": 1
+    },
+    "by_source": {
+      "synthetic": 7
+    }
+  },
+  "n": 7,
+  "per_class": {
+    "abstain": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 3
+    },
+    "class": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 1
+    },
+    "er": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 1
+    },
+    "flow": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 1
+    },
+    "sequence": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "support": 1
+    }
+  },
+  "selection_accuracy": 1.0,
+  "validity": {
+    "checked": 4,
+    "passed": 4
+  }
+}
