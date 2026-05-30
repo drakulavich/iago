@@ -269,6 +269,8 @@ def heuristic_diagram(dtype: str, files: list[dict]) -> str:
         names = []
         for p in paths:
             stem = Path(p).stem
+            # Strip leading digits and separators (e.g. "003_orders" → "orders")
+            stem = stem.lstrip("0123456789_-")
             if stem and stem not in names and not stem.startswith("_"):
                 names.append(stem.upper().replace("-", "_"))
         names = names[:6] or ["ENTITY_A", "ENTITY_B"]
