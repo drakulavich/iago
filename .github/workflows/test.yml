@@ -21,8 +21,7 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq shellcheck
-          shellcheck --severity=warning install.sh \
-                     iago/scripts/append_diagram.sh
+          shellcheck --severity=warning install.sh
 
   bats:
     name: bats (${{ matrix.os }})

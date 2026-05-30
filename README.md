@@ -184,7 +184,7 @@ iago/
 │   └── plugin.json                     # Plugin manifest
 ├── iago/
 │   ├── SKILL.md                        # Main skill
-│   ├── scripts/append_diagram.sh       # Posts / appends the diagram to the PR
+│   ├── scripts/post.ts                  # Posts / appends the diagram to the PR (bun)
 │   ├── references/
 │   │   ├── diagram-selection.md        # Rubric for picking the diagram type
 │   │   └── mermaid-templates.md
@@ -206,7 +206,7 @@ iago/
 ```bash
 ./scripts/test.sh                      # run bats suite (auto-installs bats if missing)
 ./scripts/test.sh -f "uninstall"      # filter by name
-shellcheck install.sh iago/scripts/append_diagram.sh
+shellcheck install.sh
 ```
 
 **TypeScript CLI (`@drakulavich/iago`):**

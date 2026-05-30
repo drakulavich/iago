@@ -114,17 +114,19 @@ Parse `$ARGUMENTS` permissively:
    before posting. Bypassing it means the diagram ships unchecked and is
    the #1 source of broken renders.
 
-   The helper lives at `scripts/append_diagram.sh` in this skill's own
-   directory. Different runtimes expose that directory differently —
+   The helper lives at `scripts/post.ts` in this skill's own directory (run
+   with `bun`). Different runtimes expose that directory differently —
    `${CLAUDE_SKILL_DIR}` in Claude Code, `${OPENCODE_SKILL_DIR}` in OpenCode,
    etc. Pick the one your runtime sets, or resolve it from the path of this
    `SKILL.md` file (typically `~/.claude/skills/iago/`,
    `~/.agents/skills/iago/`, or `~/.config/opencode/skills/iago/`).
 
+   Required tools: **bun** + **gh** (GitHub CLI, authenticated).
+
    ```bash
    # Pick the env var your runtime sets, or substitute the absolute path:
    SKILL_DIR="${CLAUDE_SKILL_DIR:-${OPENCODE_SKILL_DIR:-$(dirname "$0")}}"
-   bash "$SKILL_DIR/scripts/append_diagram.sh" \
+   bun run "$SKILL_DIR/scripts/post.ts" \
      --repo "$REPO" \
      --pr "$PR" \
      --mode "$MODE" \

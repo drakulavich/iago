@@ -48,7 +48,7 @@ teardown_common() {
 # Build a tarball with the same structure as the real GitHub release:
 #   iago-<version>/iago/SKILL.md
 #   iago-<version>/squawk/SKILL.md
-#   iago-<version>/iago/scripts/append_diagram.sh
+#   iago-<version>/iago/scripts/post.ts
 #   iago-<version>/iago/references/...
 #   iago-<version>/iago/examples/...
 build_fake_tarball() {
@@ -73,8 +73,7 @@ description: fake alias for tests
 # fake squawk $version
 EOF
 
-  echo "#!/usr/bin/env bash" > "$root/iago/scripts/append_diagram.sh"
-  chmod +x "$root/iago/scripts/append_diagram.sh"
+  echo "// fake post helper" > "$root/iago/scripts/post.ts"
   echo "selection rubric placeholder" > "$root/iago/references/diagram-selection.md"
   echo "templates placeholder"        > "$root/iago/references/mermaid-templates.md"
   echo "sequence example" > "$root/iago/examples/sequence.md"
