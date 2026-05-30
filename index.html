@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Iago — Mermaid diagrams for AI code reviews</title>
-<meta name="description" content="Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent. Comment /iago on any PR. GitHub Action + Claude Code / Codex / Copilot / Gemini skill." />
+<meta name="description" content="Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent. Run /iago in Claude Code, Codex, Copilot, or Gemini and the diagram appends to your /review comment." />
 <meta name="theme-color" content="#0e0a1a" />
 
 <!-- Open Graph -->
@@ -422,7 +422,7 @@
   /* -------- Agents grid -------- */
   .agents {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
   }
   .agent {
@@ -654,7 +654,7 @@
           <div class="pr-comment">
             <div class="avatar bot" aria-hidden="true">🦜</div>
             <div class="pr-text">
-              <span class="pr-user">iago-bot</span><span class="pr-meta">commented now</span>
+              <span class="pr-user">you</span><span class="pr-meta">commented now</span>
               <div class="diagram-frame">
                 <h4>🗺️ Change diagram — sequence</h4>
                 <svg class="diagram-svg" viewBox="0 0 360 220" aria-hidden="true">
@@ -677,7 +677,7 @@
                     <line x1="140" y1="40" x2="140" y2="200" class="lifeline"/>
 
                     <rect x="200" y="18" width="60" height="22" rx="4" class="lane" opacity=".85"/>
-                    <text x="230" y="33" class="laneT" text-anchor="middle">Action</text>
+                    <text x="230" y="33" class="laneT" text-anchor="middle">Agent</text>
                     <line x1="230" y1="40" x2="230" y2="200" class="lifeline"/>
 
                     <rect x="290" y="18" width="50" height="22" rx="4" class="lane" opacity=".85"/>
@@ -780,47 +780,24 @@
   <!-- ============ INSTALL ============ -->
   <section id="install" style="background: linear-gradient(180deg, transparent, rgba(255,93,143,.04) 50%, transparent);">
     <div class="wrap">
-      <div class="section-eyebrow">Six ways to install</div>
+      <div class="section-eyebrow">Five ways to install</div>
       <h2 class="section-title">Pick the install that fits your stack</h2>
       <p class="section-sub">
-        Action for teams. <code>bunx</code>/<code>npx</code> for Node users.
-        <code>curl | bash</code> for everything else. Skill-folder copy for the
-        bare <code>/iago</code> name in Claude Code, Codex, Copilot, and Gemini.
+        <code>bunx</code>/<code>npx</code> for Node users.
+        <code>curl | bash</code> for everything else. The Claude plugin, or a
+        direct skill-folder copy for the bare <code>/iago</code> name in Claude
+        Code, Codex, Copilot, and Gemini.
       </p>
 
       <div class="tabs">
         <ul class="tab-list" role="tablist">
-          <li role="presentation"><button role="tab" id="t-action"  aria-controls="p-action"  aria-selected="true"  data-tab="action">GitHub Action</button></li>
-          <li role="presentation"><button role="tab" id="t-bun"     aria-controls="p-bun"     aria-selected="false" data-tab="bun">bunx / npx</button></li>
+          <li role="presentation"><button role="tab" id="t-bun"     aria-controls="p-bun"     aria-selected="true"  data-tab="bun">bunx / npx</button></li>
           <li role="presentation"><button role="tab" id="t-curl"    aria-controls="p-curl"    aria-selected="false" data-tab="curl">curl | bash</button></li>
           <li role="presentation"><button role="tab" id="t-plugin"  aria-controls="p-plugin"  aria-selected="false" data-tab="plugin">Claude plugin</button></li>
           <li role="presentation"><button role="tab" id="t-skill"   aria-controls="p-skill"   aria-selected="false" data-tab="skill">Skill folder</button></li>
         </ul>
 
-        <div class="tab-panel" id="p-action" role="tabpanel" aria-labelledby="t-action" data-active>
-          <p>Drop this file into <code>.github/workflows/iago.yml</code>, push, and comment <code>/iago</code> on any PR.</p>
-          <div class="code">
-            <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
-<pre><span class="c-key">name</span>: Iago
-<span class="c-key">on</span>:
-  <span class="c-key">issue_comment</span>:
-    <span class="c-key">types</span>: [created]
-<span class="c-key">permissions</span>:
-  <span class="c-key">pull-requests</span>: write
-  <span class="c-key">contents</span>: read
-<span class="c-key">jobs</span>:
-  <span class="c-key">iago</span>:
-    <span class="c-key">if</span>: github.event.issue.pull_request &amp;&amp; startsWith(github.event.comment.body, <span class="c-str">'/iago'</span>)
-    <span class="c-key">runs-on</span>: ubuntu-latest
-    <span class="c-key">steps</span>:
-      - <span class="c-key">uses</span>: drakulavich/iago@v0.1.0
-        <span class="c-key">with</span>:
-          <span class="c-comment"># Optional — heuristic fallback works without a key:</span>
-          <span class="c-key">anthropic-api-key</span>: ${{ secrets.ANTHROPIC_API_KEY }}</pre>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="p-bun" role="tabpanel" aria-labelledby="t-bun">
+        <div class="tab-panel" id="p-bun" role="tabpanel" aria-labelledby="t-bun" data-active>
           <p>Friendliest path. Auto-detects Claude, Codex, Copilot, and Gemini. Re-run to update.</p>
           <div class="code">
             <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
@@ -893,14 +870,14 @@
           </div>
         </div>
         <div>
-          <h3 style="margin:0 0 10px;font-size:1rem;color:var(--ink-dim);">In a PR (Action)</h3>
+          <h3 style="margin:0 0 10px;font-size:1rem;color:var(--ink-dim);">After /review</h3>
           <div class="code">
             <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
-<pre><span class="c-cmd">/iago</span>
-<span class="c-cmd">/iago</span> er
-<span class="c-cmd">/iago</span> flow --mode=comment
+<pre><span class="c-cmd">/review</span>                 <span class="c-comment"># your reviewer posts its comment</span>
+<span class="c-cmd">/iago</span>                   <span class="c-comment"># appends the diagram to it</span>
 
-<span class="c-comment"># Iago reacts 👀 → works → 🚀 or 😕</span></pre>
+<span class="c-comment"># or just say it in plain words:</span>
+<span class="c-cmd">squawk this PR</span></pre>
           </div>
         </div>
       </div>
@@ -966,12 +943,12 @@
 
         <article class="example-card">
           <div class="example-head">
-            <h3>CI-native, no CLI</h3>
-            <span class="example-tag">GitHub Action</span>
+            <h3>Drop a standalone diagram</h3>
+            <span class="example-tag">/iago --mode=comment</span>
           </div>
           <p>
-            With the Action installed, anyone on the team just comments
-            <code>/iago</code> on a PR. Iago reacts 👀 → works → 🚀 — no local setup.
+            No <code>/review</code> comment to attach to? <code>--mode=comment</code>
+            posts the diagram as its own comment on the PR.
           </p>
         </article>
 
@@ -996,19 +973,10 @@
       <h2 class="section-title">Bring your own agent</h2>
       <p class="section-sub">
         Iago is an open standard built on the <code>SKILL.md</code> format —
-        the same skill works across every major CLI agent, plus straight-up
-        GitHub Actions.
+        the same skill works across every major CLI agent.
       </p>
 
       <div class="agents">
-        <div class="agent">
-          <svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M4 4h16v16H4z"/>
-            <path d="M9 9h6v6H9z"/>
-          </svg>
-          <h4>GitHub Action</h4>
-          <p>Comment <code>/iago</code> on any PR</p>
-        </div>
         <div class="agent">
           <svg class="agent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="12" cy="12" r="9"/>
@@ -1200,9 +1168,9 @@
     <div class="wrap">
       <h2 class="section-title" style="margin-bottom: 16px;">Give your reviewer a beak.</h2>
       <p style="color: var(--ink-dim); max-width: 560px; margin: 0 auto 30px; font-size: 1.05rem;">
-        Open source, MIT-licensed, and offline-friendly (heuristic fallback
-        works without an API key). The fastest way to add visual context to
-        every PR your agent already reviews.
+        Open source, MIT-licensed, and BYO-agent — no separate API key, no SaaS
+        reviewer. The fastest way to add visual context to every PR your agent
+        already reviews.
       </p>
       <div class="hero-actions" style="justify-content: center;">
         <a class="btn btn-primary" href="https://github.com/drakulavich/iago" rel="noopener">
