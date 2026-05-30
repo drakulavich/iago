@@ -6,14 +6,14 @@
     "url": "https://github.com/drakulavich"
   },
   "metadata": {
-    "description": "Iago — Greptile-style Mermaid diagrams for AI code reviews. Skill, alias, and GitHub Action.",
+    "description": "Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent. Skill, alias, and GitHub Action.",
     "version": "0.1.0"
   },
   "plugins": [
     {
       "name": "iago",
       "source": "./",
-      "description": "Append a Mermaid diagram (sequence/flow/class/er) to a GitHub PR's /review comment. Auto-detects type from the diff. Bundles the /iago skill and its /squawk alias. Greptile-style, but driven by your AI coding agent.",
+      "description": "Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent. Appends a sequence, flow, class, or entity-relation diagram (auto-detected from the diff) to a GitHub PR's /review comment. Bundles the /iago skill and its /squawk alias.",
       "version": "0.1.0",
       "author": {
         "name": "Anton Yakutovich",

@@ -2,7 +2,7 @@
   "$schema": "https://docs.claude.com/schemas/plugin.json",
   "name": "iago",
   "version": "0.1.0",
-  "description": "Iago — Greptile-style Mermaid diagrams for AI code reviews. Appends sequence/flow/class/er diagrams to PR /review comments.",
+  "description": "Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent. Appends a sequence, flow, class, or entity-relation diagram (auto-detected from the diff) to a GitHub PR's /review comment. Bundles the /iago skill and its /squawk alias.",
   "author": {
     "name": "Anton Yakutovich",
     "url": "https://github.com/drakulavich"
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/drakulavich/iago",
   "repository": "https://github.com/drakulavich/iago",
   "license": "MIT",
-  "keywords": ["pr", "review", "mermaid", "diagram", "github", "code-review"],
+  "keywords": ["pr", "review", "mermaid", "diagram", "github", "code-review", "greptile", "squawk"],
   "skills": [
     "./iago",
     "./squawk"
