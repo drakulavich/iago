@@ -1,17 +1,22 @@
-# 🦜 Iago
+<p align="center">🦜</p>
 
-> _"Awk! Awk! Add a diagram!"_
+<h1 align="center">Iago</h1>
 
-**Greptile-style Mermaid diagrams for AI code reviews — but driven by your own
-agent.** Iago perches on top of a `/review` comment and squawks a visual
-summary of the change: sequence, flow, class, or entity-relation.
+<p align="center">
+  <a href="https://github.com/drakulavich/iago/actions/workflows/test.yml"><img src="https://github.com/drakulavich/iago/actions/workflows/test.yml/badge.svg" alt="Tests"></a>
+  <a href="https://www.npmjs.com/package/@drakulavich/iago"><img src="https://img.shields.io/npm/v/@drakulavich/iago" alt="npm version"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://bun.sh"><img src="https://img.shields.io/badge/runtime-Bun-f9f1e1?logo=bun" alt="Bun"></a>
+</p>
 
-Works as:
+<p align="center"><b>Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent.</b><br>Iago perches on top of a <code>/review</code> comment and squawks a visual summary of the change: sequence, flow, class, or entity-relation.</p>
 
-- 🤖 **GitHub Action** — comment `/iago` on any PR (no CLI needed).
-- 💻 **Claude Code skill** — `/iago` in your terminal.
-- 🦦 **Codex CLI skill** — same skill, same standard.
-- 🪞 Aliased as **`/squawk`** in all three.
+<p align="center"><i>"Awk! Awk! Add a diagram!"</i></p>
+
+- **Claude Code skill** — run `/iago` (or `/squawk`) in your terminal; it appends the diagram to your `/review` comment.
+- **Codex / Copilot / Gemini** — the same `SKILL.md`, the same open standard.
+- **Your agent draws it** — Iago uses the LLM you're already running. No extra API key, no SaaS reviewer.
+- **Type auto-detected** — sequence, flow, class, or entity-relation, picked from the diff. Override anytime.
 
 > _Demo GIF coming soon — will live here:_ `docs/demo.gif`
 
@@ -19,9 +24,9 @@ Works as:
 
 ## Why?
 
-Greptile and CodeRabbit auto-add Mermaid diagrams to every PR. Claude Code's
-and Codex's `/review` are great, but they don't draw. Iago fills that gap —
-without locking you into a SaaS reviewer.
+Greptile and CodeRabbit auto-add Mermaid diagrams to every PR. Claude Code's and
+Codex's `/review` are great, but they don't draw. Iago fills that gap — using the
+agent you already run, without locking you into a SaaS reviewer.
 
 ## How it picks the diagram type
 
@@ -43,42 +48,16 @@ Full rubric: [`iago/references/diagram-selection.md`](iago/references/diagram-se
 
 ## Install
 
-### Option 1 — GitHub Action (recommended for teams)
+Iago is a skill for your coding agent. Pick the install that fits your stack.
 
-Drop this file into `.github/workflows/iago.yml`:
-
-```yaml
-name: Iago
-on:
-  issue_comment:
-    types: [created]
-permissions:
-  pull-requests: write
-  contents: read
-jobs:
-  iago:
-    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/iago')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: drakulavich/iago@v0.1.0
-        with:
-          # Pick one to get LLM-quality diagrams (otherwise heuristic fallback is used):
-          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-```
-
-Then on any PR, comment `/iago` (or `/iago sequence`, etc.) and Iago appends a
-diagram to the most recent `/review` comment, or posts a new one.
-
-Full example with all inputs: [`examples/workflow.yml`](examples/workflow.yml).
-
-### Option 2 — Quickest install (Node / Bun)
+### Option 1 — Node / Bun (recommended)
 
 If you have Node ≥18 or Bun, this is the friendliest path — no `curl | bash`,
-fully typed, with a `--dry-run` flag and a `doctor` subcommand:
+fully typed, with a `--dry-run` flag and a `doctor` subcommand. Auto-detects
+Claude Code, Codex, Copilot, and Gemini:
 
 ```bash
-bunx @drakulavich/iago install --force      # auto-detects Claude / Codex / Copilot / Gemini
+bunx @drakulavich/iago install --force      # auto-detects your agents
 npx  @drakulavich/iago install --force      # same, via npm
 ```
 
@@ -86,12 +65,12 @@ Re-run the same command to update. Other commands:
 
 ```bash
 bunx @drakulavich/iago doctor                # show install paths and versions
-bunx @drakulavich/iago install --target=both # install into all four agent dirs
+bunx @drakulavich/iago install --target=both # install into all agent dirs
 bunx @drakulavich/iago install --version=v0.1.1
 bunx @drakulavich/iago uninstall --target=claude
 ```
 
-### Option 3 — Quickest install (curl | bash)
+### Option 2 — curl | bash
 
 For systems without Node/Bun. Same behavior, pure shell:
 
@@ -101,9 +80,9 @@ curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | 
 
 Re-run to update. Add `--uninstall` to remove. Run with `--help` for all flags.
 
-### Option 4 — Claude Code (plugin)
+### Option 3 — Claude Code (plugin)
 
-Install from the iago marketplace (works today):
+Install from the iago marketplace:
 
 ```bash
 /plugin marketplace add drakulavich/iago
@@ -144,7 +123,7 @@ rm -rf /tmp/iago-skill
 
 Invoke with `/iago` or `/squawk` in any session, or just say "squawk this PR".
 
-### Option 5 — Codex CLI (skill)
+### Option 4 — Codex CLI
 
 ```bash
 git clone https://github.com/drakulavich/iago /tmp/iago-skill
@@ -156,7 +135,7 @@ rm -rf /tmp/iago-skill
 Invoke with `$iago`, `$squawk`, or `/skills`. Same `SKILL.md` open standard,
 no Codex-specific changes needed.
 
-### Option 6 — Copilot CLI / Gemini CLI
+### Option 5 — Copilot CLI / Gemini CLI
 
 Drop the two skill folders into `.github/skills/` (Copilot) or `.gemini/skills/`
 (Gemini). Behavior is identical.
@@ -165,7 +144,7 @@ Drop the two skill folders into `.github/skills/` (Copilot) or `.gemini/skills/`
 
 ## Usage
 
-### In CLI (Claude Code / Codex)
+In Claude Code / Codex:
 
 ```text
 /iago                         # auto-detect PR + type, append to /review
@@ -179,57 +158,20 @@ Drop the two skill folders into `.github/skills/` (Copilot) or `.gemini/skills/`
 Accepted types: `sequence`, `flow` (alias `flowchart`), `class`,
 `er` (aliases `erd`, `entity`).
 
-> Installed as a Claude Code **plugin** (Option 4)? The commands are namespaced:
+> Installed as a Claude Code **plugin** (Option 3)? The commands are namespaced:
 > use `/iago:iago` and `/iago:squawk`. The bare `/iago` / `/squawk` above apply
 > to the manual skill-copy and Codex installs.
-
-### In GitHub (Action)
-
-Just comment on a PR:
-
-```text
-/iago
-/iago er
-/iago flow --mode=comment
-```
-
-Iago reacts 👀 → does its work → reacts 🚀 on success or 😕 on failure.
 
 ---
 
 ## Hooking it to your `/review` skill
 
-Best UX is: run `/review` first, then `/iago`. Iago finds your `/review`
-comment by looking for the marker `<!-- review-skill -->` in its body.
+Best UX is: run `/review` first, then `/iago` in the same session. Iago finds
+your `/review` comment by looking for the marker `<!-- review-skill -->` in its
+body.
 
-If your review skill doesn't emit that marker, Iago falls back to "most
-recent comment by you starting with `## Review`".
-
-If you want one command to do both, the cleanest path today is the Action +
-having Codex/Claude post a `/review` first, then commenting `/iago`.
-
----
-
-## Inputs (Action)
-
-| Input | Default | Description |
-|---|---|---|
-| `github-token` | `${{ github.token }}` | Token with `pull-requests: write`. |
-| `trigger` | `/iago` | Comment prefix that activates the Action. |
-| `diagram-type` | `auto` | `auto` \| `sequence` \| `flow` \| `class` \| `er`. |
-| `mode` | `append` | `append` to /review comment, or `comment` for standalone. |
-| `llm-provider` | `auto` | `auto` \| `anthropic` \| `openai` \| `none`. |
-| `anthropic-api-key` | _(none)_ | Anthropic API key. |
-| `openai-api-key` | _(none)_ | OpenAI API key. |
-| `llm-model` | _(provider default)_ | `claude-sonnet-4-5`, `gpt-4o-mini`, etc. |
-| `review-comment-marker` | `<!-- review-skill -->` | Marker to find /review. |
-
-## Outputs (Action)
-
-| Output | Description |
-|---|---|
-| `comment-url` | URL of the comment that was edited or created. |
-| `diagram-type` | Type generated, or `skipped` if Iago abstained. |
+If your review skill doesn't emit that marker, Iago falls back to "most recent
+comment by you starting with `## Review`".
 
 ---
 
@@ -237,16 +179,14 @@ having Codex/Claude post a `/review` first, then commenting `/iago`.
 
 ```
 iago/
-├── action.yml                          # GitHub Action entrypoint
-├── action/scripts/run.py               # Action implementation
 ├── .claude-plugin/
 │   ├── marketplace.json                # Claude Code marketplace manifest
 │   └── plugin.json                     # Plugin manifest
 ├── iago/
-│   ├── SKILL.md                        # Main CLI skill
-│   ├── scripts/append_diagram.sh
+│   ├── SKILL.md                        # Main skill
+│   ├── scripts/append_diagram.sh       # Posts / appends the diagram to the PR
 │   ├── references/
-│   │   ├── diagram-selection.md
+│   │   ├── diagram-selection.md        # Rubric for picking the diagram type
 │   │   └── mermaid-templates.md
 │   └── examples/
 │       ├── sequence.md
@@ -255,8 +195,8 @@ iago/
 │       └── er.md
 ├── squawk/
 │   └── SKILL.md                        # Alias for iago
-└── examples/
-    └── workflow.yml                    # Example GitHub Actions workflow
+├── cli/                                # @drakulavich/iago installer (TypeScript / Bun)
+└── install.sh                          # curl | bash installer
 ```
 
 ## Development
@@ -274,7 +214,7 @@ shellcheck install.sh iago/scripts/append_diagram.sh
 ```bash
 cd cli
 bun install
-bun test                               # 41 tests, ~700ms
+bun test                               # tests, ~700ms
 bun run typecheck                      # tsc --noEmit
 bun run dev install --target=claude --dry-run
 ```
@@ -287,4 +227,4 @@ in the TS extractor). Tests are offline (no network) thanks to the
 
 ## License
 
-MIT.
+Made with 🦜 squawks and zero SaaS lock-in, under the MIT License.
