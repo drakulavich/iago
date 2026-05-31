@@ -126,3 +126,9 @@ describe("post", () => {
     }
   });
 });
+
+test("post throws a clear error when the diagram file is missing", () => {
+  expect(() =>
+    post({ repo: "o/r", pr: "5", mode: "comment", diagramFile: "/no/such/iago-file.md" }, () => ""),
+  ).toThrow(/Diagram file not found/);
+});

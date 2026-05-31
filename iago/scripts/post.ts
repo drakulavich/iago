@@ -3,7 +3,7 @@
 // here; orchestration + CLI entry are added in a later task. Runtime: bun + gh.
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sanitize } from "./sanitize.ts";
@@ -61,6 +61,7 @@ function ghJson<T>(gh: GhRunner, args: string[]): T {
 export function post(opts: PostOpts, gh: GhRunner = defaultGh): string {
   const [owner, name] = opts.repo.split("/");
   if (!owner || !name) throw new Error(`Invalid --repo (want OWNER/REPO): ${opts.repo}`);
+  if (!existsSync(opts.diagramFile)) throw new Error(`Diagram file not found: ${opts.diagramFile}`);
 
   const block = sanitize(readFileSync(opts.diagramFile, "utf8"));
 
