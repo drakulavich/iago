@@ -55,7 +55,8 @@ Runtime requirements: **`bun`** + authenticated **`gh`** (`gh auth status`).
 ```
 # Claude Code (plugin):
 /plugin marketplace add drakulavich/iago
-/plugin install iago@iago-marketplace          # invoke /iago:iago, /iago:squawk
+/plugin install iago@iago-marketplace
+/reload-plugins                                 # then invoke /iago:iago, /iago:squawk
 
 # Any agent (recommended for Codex/Copilot/Gemini):
 bunx @drakulavich/iago install --force          # npx also works; `doctor` shows paths
@@ -91,7 +92,8 @@ docs/superpowers/                 # design specs + plans (historical record)
    to a temp file and runs:
    `bun run "$SKILL_DIR/scripts/post.ts" --repo OWNER/REPO --pr N --mode append --diagram-file FILE`.
 3. `post.ts` finds the `/review` comment (marker `<!-- review-skill -->`, else the
-   newest comment by the viewer starting with `## Review`), sanitizes, idempotently
+   newest comment by the viewer starting with `# Review`, `## Review`, or
+   `### Review`), sanitizes, idempotently
    replaces any prior Iago block (or appends), and posts via `gh`. `--mode=comment`
    posts a standalone comment.
 
