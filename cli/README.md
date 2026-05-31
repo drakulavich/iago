@@ -41,13 +41,6 @@ iago version
 
 Each install drops a `.iago-version` marker so `iago doctor` can show what's installed.
 
-## Why a CLI in addition to install.sh?
-
-The shell installer (`curl … | bash`) still works and ships in the same repo.
-The TS CLI is a parallel channel for users who already have Node/Bun and prefer
-not to pipe shell scripts. Both honor the same flags, the same `.iago-version`
-marker, and the same `IAGO_LOCAL_TARBALL` test hook — pick whichever you like.
-
 ## Project links
 
 - Repo: https://github.com/drakulavich/iago

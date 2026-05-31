@@ -52,9 +52,9 @@ Iago is a skill for your coding agent. Pick the install that fits your stack.
 
 ### Option 1 — Node / Bun (recommended)
 
-If you have Node ≥18 or Bun, this is the friendliest path — no `curl | bash`,
-fully typed, with a `--dry-run` flag and a `doctor` subcommand. Auto-detects
-Claude Code, Codex, Copilot, and Gemini:
+If you have Node ≥18 or Bun, this is the friendliest path — fully typed, with a
+`--dry-run` flag and a `doctor` subcommand. Auto-detects Claude Code, Codex,
+Copilot, and Gemini:
 
 ```bash
 bunx @drakulavich/iago install --force      # auto-detects your agents
@@ -70,18 +70,7 @@ bunx @drakulavich/iago install --version=v0.2.0
 bunx @drakulavich/iago uninstall --target=claude
 ```
 
-### Option 2 — curl | bash
-
-Installs the skill without the npm CLI (pure shell). Note: running Iago itself
-needs `bun` + `gh` on your machine.
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | bash -s -- --force
-```
-
-Re-run to update. Add `--uninstall` to remove. Run with `--help` for all flags.
-
-### Option 3 — Claude Code (plugin)
+### Option 2 — Claude Code (plugin)
 
 Install from the iago marketplace:
 
@@ -124,7 +113,7 @@ rm -rf /tmp/iago-skill
 
 Invoke with `/iago` or `/squawk` in any session, or just say "squawk this PR".
 
-### Option 4 — Codex CLI
+### Option 3 — Codex CLI
 
 ```bash
 git clone https://github.com/drakulavich/iago /tmp/iago-skill
@@ -136,7 +125,7 @@ rm -rf /tmp/iago-skill
 Invoke with `$iago`, `$squawk`, or `/skills`. Same `SKILL.md` open standard,
 no Codex-specific changes needed.
 
-### Option 5 — Copilot CLI / Gemini CLI
+### Option 4 — Copilot CLI / Gemini CLI
 
 Drop the two skill folders into `.github/skills/` (Copilot) or `.gemini/skills/`
 (Gemini). Behavior is identical.
@@ -159,7 +148,7 @@ In Claude Code / Codex:
 Accepted types: `sequence`, `flow` (alias `flowchart`), `class`,
 `er` (aliases `erd`, `entity`).
 
-> Installed as a Claude Code **plugin** (Option 3)? The commands are namespaced:
+> Installed as a Claude Code **plugin** (Option 2)? The commands are namespaced:
 > use `/iago:iago` and `/iago:squawk`. The bare `/iago` / `/squawk` above apply
 > to the manual skill-copy and Codex installs.
 
@@ -197,21 +186,12 @@ iago/
 │       └── er.md
 ├── squawk/
 │   └── SKILL.md                        # Alias for iago
-├── cli/                                # @drakulavich/iago installer (TypeScript / Bun)
-└── install.sh                          # curl | bash installer
+└── cli/                                # @drakulavich/iago installer (TypeScript / Bun)
 ```
 
 ## Development
 
-**Shell / install.sh:**
-
-```bash
-./scripts/test.sh                      # run bats suite (auto-installs bats if missing)
-./scripts/test.sh -f "uninstall"      # filter by name
-shellcheck install.sh
-```
-
-**TypeScript CLI (`@drakulavich/iago`):**
+The installer and skill helper live in `cli/` (TypeScript, run with Bun):
 
 ```bash
 cd cli
@@ -221,11 +201,11 @@ bun run typecheck                      # tsc --noEmit
 bun run dev install --target=claude --dry-run
 ```
 
-CI runs both suites on Ubuntu and **macOS**. The macOS leg is critical: it
-tests against macOS's stock bash 3.2 (catches portability regressions in
-`install.sh`) and against macOS's BSD `tar` (catches differences from GNU tar
-in the TS extractor). Tests are offline (no network) thanks to the
-`IAGO_LOCAL_TARBALL` hook — honored by both `install.sh` and the TS CLI.
+CI runs the suite on Ubuntu and **macOS**. The macOS leg is critical: it tests
+the TS tarball extractor against macOS's BSD `tar` (catches differences from
+GNU tar). Tests are offline (no network) thanks to the `IAGO_LOCAL_TARBALL`
+hook. Plugin manifests are checked separately by `claude plugin validate
+--strict`.
 
 ## License
 
