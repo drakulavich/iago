@@ -68,6 +68,9 @@ bunx @drakulavich/iago install --force          # npx also works; `doctor` shows
 /squawk                # alias
 ```
 
+Full install options (`curl`, `--target`, `--version`, `doctor`) and end-user
+usage live in [README.md](./README.md) — this file keeps only the canonical path.
+
 ## Repo structure
 
 ```
@@ -85,17 +88,15 @@ docs/superpowers/                 # design specs + plans (historical record)
 
 ## How the skill executes
 
-1. `iago/SKILL.md` tells the agent to pick a type (rubric:
-   `iago/references/diagram-selection.md`) and write the Mermaid (templates:
-   `iago/references/mermaid-templates.md`).
+1. `iago/SKILL.md` tells the agent to pick a diagram type (per the selection
+   rubric) and write the Mermaid (per the templates).
 2. The agent writes the wrapped block (`<!-- iago:begin -->` … `<!-- iago:end -->`)
    to a temp file and runs:
    `bun run "$SKILL_DIR/scripts/post.ts" --repo OWNER/REPO --pr N --mode append --diagram-file FILE`.
 3. `post.ts` finds the `/review` comment (marker `<!-- review-skill -->`, else the
    newest comment by the viewer starting with `# Review`, `## Review`, or
    `### Review`), sanitizes, idempotently
-   replaces any prior Iago block (or appends), and posts via `gh`. `--mode=comment`
-   posts a standalone comment.
+   replaces any prior Iago block (or appends), and posts via `gh`.
 
 ## Build / test
 
@@ -106,8 +107,7 @@ cd cli && bun run typecheck    # tsc --noEmit (strict)
 claude plugin validate . --strict   # plugin / marketplace manifests
 ```
 
-There is no bats suite. Manifest invariants (exactly one plugin, named `iago`,
-no standalone `squawk`) are enforced by jq steps in the CI `validate` job.
+No bats suite — manifest invariants are enforced by the CI `validate` job (below).
 
 ## CI / release
 
