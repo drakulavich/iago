@@ -3,8 +3,7 @@
 // Philosophy (Martin Fowler / Kent C. Dodds): exercise the CLI through its
 // real interface (subprocess invocation) using a real temp filesystem and a
 // real fake tarball. We assert on observable outcomes — files created, exit
-// codes, stdout — not on internal calls. This mirrors the bats coverage so
-// both channels (install.sh and bunx @drakulavich/iago) stay in lockstep.
+// codes, stdout — not on internal calls.
 
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import {

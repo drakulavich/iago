@@ -19,8 +19,8 @@ export interface Options {
   skillOnly: SkillSelector;
   dryRun: boolean;
   force: boolean;
-  // Test hook: skip network, use this local path as the tarball.
-  // Mirrors the IAGO_LOCAL_TARBALL env var on install.sh.
+  // Test hook: skip network, use this local path as the tarball
+  // (set via the IAGO_LOCAL_TARBALL env var).
   localTarball?: string;
   // Override repo (for forks / mirrors).
   repo: string;
