@@ -8,22 +8,22 @@ sequenceDiagram
     autonumber
     actor User
     participant CLI as kesha CLI
-    participant Loop as stdin-loop
+    participant Reader as stdin-loop
     participant Sess as TtsSession (shared)
     participant Engine as VoskTtsEngine
 
     User->>CLI: kesha tts --stdin-loop
-    CLI->>Loop: start()
-    Loop->>Sess: ensure(voice)
+    CLI->>Reader: start()
+    Reader->>Sess: ensure(voice)
     loop per line on stdin
-      User-)Loop: text\n
-      Loop->>Sess: synth(text)
+      User-)Reader: text\n
+      Reader->>Sess: synth(text)
       Sess->>Engine: synthesize(text)
       Engine-->>Sess: pcm
-      Sess-->>Loop: opus bytes
-      Loop-->>User: write stdout
+      Sess-->>Reader: opus bytes
+      Reader-->>User: write stdout
     end
-    User-)Loop: EOF
-    Loop->>Sess: close()
+    User-)Reader: EOF
+    Reader->>Sess: close()
 ```
 <!-- iago:end -->
