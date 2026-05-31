@@ -21,7 +21,7 @@ iago install --force                  # quiet, no prompts (good for piping / CI)
 iago install --target=both            # install into Claude + Codex + Copilot + Gemini
 iago install --target=claude          # claude | codex | copilot | gemini | both | all | auto
 iago install --skill-only=iago        # iago | squawk | both
-iago install --version=v0.1.1         # pin to a specific release
+iago install --version=v0.2.0         # pin to a specific release
 iago install --dry-run                # show plan, change nothing
 iago uninstall --target=claude
 iago doctor                           # show install paths and detected versions
@@ -52,7 +52,7 @@ marker, and the same `IAGO_LOCAL_TARBALL` test hook — pick whichever you like.
 
 - Repo: https://github.com/drakulavich/iago
 - Issues: https://github.com/drakulavich/iago/issues
-- Full docs (Action / skills / hooks): see the repo README.
+- Full docs (install / skills / usage): see the repo README.
 
 ## License
 
