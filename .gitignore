@@ -5,3 +5,9 @@ node_modules/
 .venv/
 __pycache__/
 cli/dist/
+
+# Local agent / dev session state (never part of the project)
+.omc/
+.claude/
+.codegraph/
+.cocoindex_code/
