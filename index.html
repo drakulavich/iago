@@ -159,6 +159,14 @@
     max-width: 520px;
     margin: 0 0 28px;
   }
+  .hero-lede code {
+    background: rgba(255,255,255,.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .9em;
+    color: var(--accent-3);
+  }
   .hero-quote {
     font-style: italic;
     color: var(--ink-mute);
@@ -616,9 +624,10 @@
         </span>
         <h1>Mermaid diagrams for <span class="accent">AI code reviews</span>.</h1>
         <p class="hero-lede">
-          Iago perches on top of your AI reviewer and squawks a visual summary
-          of every PR — sequence, flow, class, or ER — auto-detected from the
-          diff. Driven by <em>your</em> agent, not a SaaS reviewer.
+          Greptile-style diagrams, without the SaaS. Iago perches on top of
+          your <code>/review</code> comment and squawks a visual summary of the
+          change — sequence, flow, class, or ER — auto-detected from the diff
+          and drawn by <em>your</em> agent's own LLM.
         </p>
         <p class="hero-quote">“Awk! Awk! Add a diagram!”</p>
         <div class="hero-actions">
@@ -780,48 +789,38 @@
   <!-- ============ INSTALL ============ -->
   <section id="install" style="background: linear-gradient(180deg, transparent, rgba(255,93,143,.04) 50%, transparent);">
     <div class="wrap">
-      <div class="section-eyebrow">Five ways to install</div>
-      <h2 class="section-title">Pick the install that fits your stack</h2>
+      <div class="section-eyebrow">Pick your path</div>
+      <h2 class="section-title">Install the way that fits your stack</h2>
       <p class="section-sub">
-        <code>bunx</code>/<code>npx</code> for Node users.
-        <code>curl | bash</code> for everything else. The Claude plugin, or a
-        direct skill-folder copy for the bare <code>/iago</code> name in Claude
-        Code, Codex, Copilot, and Gemini.
+        Runtime is just <code>bun</code> + an authenticated <code>gh</code>.
+        Use <code>bunx</code>/<code>npx</code> for Node users, the Claude Code
+        plugin, or a direct skill-folder copy for the bare <code>/iago</code>
+        name in Claude Code, Codex, Copilot, and Gemini.
       </p>
 
       <div class="tabs">
         <ul class="tab-list" role="tablist">
           <li role="presentation"><button role="tab" id="t-bun"     aria-controls="p-bun"     aria-selected="true"  data-tab="bun">bunx / npx</button></li>
-          <li role="presentation"><button role="tab" id="t-curl"    aria-controls="p-curl"    aria-selected="false" data-tab="curl">curl | bash</button></li>
           <li role="presentation"><button role="tab" id="t-plugin"  aria-controls="p-plugin"  aria-selected="false" data-tab="plugin">Claude plugin</button></li>
           <li role="presentation"><button role="tab" id="t-skill"   aria-controls="p-skill"   aria-selected="false" data-tab="skill">Skill folder</button></li>
         </ul>
 
         <div class="tab-panel" id="p-bun" role="tabpanel" aria-labelledby="t-bun" data-active>
-          <p>Friendliest path. Auto-detects Claude, Codex, Copilot, and Gemini. Re-run to update.</p>
+          <p>Friendliest path. Fully typed, auto-detects Claude Code, Codex, Copilot, and Gemini. Re-run the same command to update.</p>
           <div class="code">
             <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
 <pre><span class="c-cmd">bunx</span> @drakulavich/iago install --force
-<span class="c-cmd">npx</span>  @drakulavich/iago install --force
+<span class="c-cmd">npx</span>  @drakulavich/iago install --force   <span class="c-comment"># same, via npm</span>
 
 <span class="c-comment"># Diagnostics &amp; targeted install:</span>
-<span class="c-cmd">bunx</span> @drakulavich/iago doctor
+<span class="c-cmd">bunx</span> @drakulavich/iago doctor              <span class="c-comment"># show install paths &amp; versions</span>
 <span class="c-cmd">bunx</span> @drakulavich/iago install --target=both
 <span class="c-cmd">bunx</span> @drakulavich/iago uninstall --target=claude</pre>
           </div>
         </div>
 
-        <div class="tab-panel" id="p-curl" role="tabpanel" aria-labelledby="t-curl">
-          <p>For systems without Node or Bun. Pure shell, same behavior. Re-run to update; add <code>--uninstall</code> to remove.</p>
-          <div class="code">
-            <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
-<pre><span class="c-cmd">curl</span> -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh \
-  | <span class="c-cmd">bash</span> -s -- --force</pre>
-          </div>
-        </div>
-
         <div class="tab-panel" id="p-plugin" role="tabpanel" aria-labelledby="t-plugin">
-          <p>Install via the Claude Code plugin marketplace. Plugin skills are namespaced as <code>/iago:iago</code> and <code>/iago:squawk</code>.</p>
+          <p>Install via the Claude Code plugin marketplace. Plugin skills are namespaced as <code>/iago:iago</code> and <code>/iago:squawk</code>. Already added the marketplace? Run <code>/plugin marketplace update iago-marketplace</code> first.</p>
           <div class="code">
             <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
 <pre>/plugin marketplace add drakulavich/iago
@@ -831,7 +830,7 @@
         </div>
 
         <div class="tab-panel" id="p-skill" role="tabpanel" aria-labelledby="t-skill">
-          <p>Copy the skill folders directly. Gives you the bare <code>/iago</code> and <code>/squawk</code> names — no plugin namespace.</p>
+          <p>Copy the skill folders directly for the bare <code>/iago</code> and <code>/squawk</code> names — no plugin namespace. Use <code>~/.claude/skills/</code> for Claude Code or <code>~/.agents/skills/</code> for Codex.</p>
           <div class="code">
             <button class="copy-btn" type="button" aria-label="Copy code">Copy</button>
 <pre><span class="c-cmd">git</span> clone https://github.com/drakulavich/iago /tmp/iago-skill
@@ -1168,9 +1167,10 @@
     <div class="wrap">
       <h2 class="section-title" style="margin-bottom: 16px;">Give your reviewer a beak.</h2>
       <p style="color: var(--ink-dim); max-width: 560px; margin: 0 auto 30px; font-size: 1.05rem;">
-        Open source, MIT-licensed, and BYO-agent — no separate API key, no SaaS
-        reviewer. The fastest way to add visual context to every PR your agent
-        already reviews.
+        Greptile and CodeRabbit draw diagrams on every PR; Claude Code's and
+        Codex's <code style="background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px;font-family:var(--mono);font-size:.9em;color:var(--accent-3);">/review</code>
+        don't. Iago fills that gap — open source, MIT-licensed, BYO-agent. No
+        API key, no SaaS lock-in.
       </p>
       <div class="hero-actions" style="justify-content: center;">
         <a class="btn btn-primary" href="https://github.com/drakulavich/iago" rel="noopener">
