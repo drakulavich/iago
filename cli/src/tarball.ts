@@ -105,8 +105,8 @@ export async function buildFakeTarball(
     `---\nname: iago\ndescription: fake skill for tests\n---\n# fake iago ${version}\n`);
   writeFileSync(join(root, "squawk", "SKILL.md"),
     `---\nname: squawk\ndescription: fake alias for tests\n---\n# fake squawk ${version}\n`);
-  writeFileSync(join(root, "iago", "scripts", "append_diagram.sh"),
-    "#!/usr/bin/env bash\necho fake\n");
+  writeFileSync(join(root, "iago", "scripts", "post.ts"),
+    "// fake post.ts for tests\n");
   writeFileSync(join(root, "iago", "references", "diagram-selection.md"), "fake\n");
   writeFileSync(join(root, "iago", "references", "mermaid-templates.md"), "fake\n");
   writeFileSync(join(root, "iago", "examples", "sequence.md"), "fake\n");

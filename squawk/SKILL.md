@@ -33,8 +33,8 @@ Concretely:
    `squawk/` directory in whichever skills folder your runtime uses
    (`~/.claude/skills/`, `~/.agents/skills/`, `~/.config/opencode/skills/`,
    etc.).
-2. Use the helper at `../iago/scripts/append_diagram.sh` (relative to this
-   skill's directory) when it's time to post the diagram.
+2. Use the helper at `../iago/scripts/post.ts` (relative to this skill's
+   directory), run with `bun run`, when it's time to post the diagram.
 3. Use the references and examples under `../iago/` for selection rules and
    Mermaid syntax.
 
