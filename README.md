@@ -13,6 +13,10 @@
 
 <p align="center"><i>"Awk! Awk! Add a diagram!"</i></p>
 
+<p align="center">
+  <img src="https://github.com/drakulavich/iago/raw/main/demo.gif" alt="Iago install demo — one command adds the skill (and its /squawk alias) to Claude Code, Codex, Copilot, Gemini, and opencode" width="800">
+</p>
+
 ## See it
 
 Iago turns a PR diff into a diagram and posts it on top of your `/review` comment:
