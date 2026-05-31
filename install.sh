@@ -9,7 +9,7 @@
 #
 # With options:
 #   curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | bash -s -- --target=claude
-#   curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | bash -s -- --version=v0.1.1
+#   curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | bash -s -- --version=v0.2.0
 #   curl -fsSL https://raw.githubusercontent.com/drakulavich/iago/main/install.sh | bash -s -- --uninstall
 #
 # Or local:
@@ -17,7 +17,7 @@
 #
 # Flags:
 #   --target=<claude|codex|copilot|gemini|opencode|both|all>   Where to install. Default: auto-detect.
-#   --version=<tag|latest>                            Tag to install (e.g. v0.1.1). Default: latest release.
+#   --version=<tag|latest>                            Tag to install (e.g. v0.2.0). Default: latest release.
 #   --skill-only=<iago|squawk|both>                   Which skill to install. Default: both.
 #   --dry-run                                         Print what would happen, change nothing.
 #   --uninstall                                       Remove iago and squawk from selected target(s).

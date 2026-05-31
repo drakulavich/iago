@@ -118,7 +118,7 @@ Commands:
 Install / uninstall options:
   --target=<sel>       claude | codex | copilot | gemini | opencode | both | all | auto
                        (default: auto — detect existing skill dirs)
-  --version=<tag>      e.g. v0.1.1 (default: latest GitHub release)
+  --version=<tag>      e.g. v0.2.0 (default: latest GitHub release)
   --skill-only=<sel>   iago | squawk | both (default: both)
   --dry-run            Print what would happen, change nothing.
   --force              Overwrite without confirmation; required when piped.
@@ -128,7 +128,7 @@ Install / uninstall options:
 Examples:
   bunx @drakulavich/iago install                  # auto-detect, latest, prompts
   bunx @drakulavich/iago install --force          # quiet, no prompts
-  bunx @drakulavich/iago install --version=v0.1.1
+  bunx @drakulavich/iago install --version=v0.2.0
   bunx @drakulavich/iago install --target=both
   bunx @drakulavich/iago uninstall --target=claude
 `;
