@@ -10,3 +10,7 @@ cli/dist/
 .omc/
 .claude/
 .codegraph/
+.cocoindex_code/
+
+# Local blog drafts (not part of the shipped project)
+docs/blog/
