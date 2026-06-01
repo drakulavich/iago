@@ -20,24 +20,24 @@ const MARKER = "<!-- review-skill -->";
 const HEADING = /^\s*#{1,3}\s+Review\b/m;
 const IAGO_BLOCK = /<!--\s*iago:begin\s*-->[\s\S]*?<!--\s*iago:end\s*-->/;
 
-export function findReviewCommentId(comments: Comment[], viewer: string): number | null {
+export function findTargetCommentId(comments: Comment[], viewer: string): number | null {
   const byDate = (a: Comment, b: Comment): number => a.created_at.localeCompare(b.created_at);
 
-  const marked = comments.filter((x) => x.body.includes(MARKER)).sort(byDate);
-  if (marked.length > 0) return marked[marked.length - 1]!.id;
+  // Preference order: the canonical /review comment (a review-skill marker,
+  // then a "Review" heading we authored), then a prior diagram we posted as a
+  // standalone comment (mode=comment, or the postNew() fallback — no marker,
+  // no heading, just our own Iago block). Replacing whichever we find first
+  // keeps one block per PR across re-runs.
+  const tiers: Array<(x: Comment) => boolean> = [
+    (x) => x.body.includes(MARKER),
+    (x) => x.user.login === viewer && HEADING.test(x.body),
+    (x) => x.user.login === viewer && IAGO_BLOCK.test(x.body),
+  ];
 
-  const headed = comments
-    .filter((x) => x.user.login === viewer && HEADING.test(x.body))
-    .sort(byDate);
-  if (headed.length > 0) return headed[headed.length - 1]!.id;
-
-  // Last resort: a prior diagram posted as a standalone comment (mode=comment,
-  // or the postNew() fallback) — no marker, no heading, just our own Iago
-  // block. Replace it in place so re-runs keep one block per PR.
-  const blocked = comments
-    .filter((x) => x.user.login === viewer && IAGO_BLOCK.test(x.body))
-    .sort(byDate);
-  if (blocked.length > 0) return blocked[blocked.length - 1]!.id;
+  for (const match of tiers) {
+    const found = comments.filter(match).sort(byDate);
+    if (found.length > 0) return found[found.length - 1]!.id;
+  }
 
   return null;
 }
@@ -95,7 +95,7 @@ export function post(opts: PostOpts, gh: GhRunner = defaultGh): string {
   ]);
   const comments = pages.flat();
 
-  const targetId = findReviewCommentId(comments, viewer);
+  const targetId = findTargetCommentId(comments, viewer);
   if (targetId === null) return postNew();
 
   const current = comments.find((x) => x.id === targetId)!.body;

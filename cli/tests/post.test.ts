@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-  findReviewCommentId,
+  findTargetCommentId,
   replaceOrAppendBlock,
   type Comment,
 } from "../../iago/scripts/post.ts";
@@ -9,14 +9,14 @@ function c(id: number, created_at: string, body: string, login = "me"): Comment 
   return { id, created_at, body, user: { login } };
 }
 
-describe("findReviewCommentId", () => {
+describe("findTargetCommentId", () => {
   test("marker match wins over heading and picks newest marked", () => {
     const comments = [
       c(1, "2024-01-01T00:00:00Z", "## Review old", "me"),
       c(2, "2024-01-02T00:00:00Z", "diagram <!-- review-skill --> here", "bot"),
       c(3, "2024-01-03T00:00:00Z", "## Review newer by me", "me"),
     ];
-    expect(findReviewCommentId(comments, "me")).toBe(2);
+    expect(findTargetCommentId(comments, "me")).toBe(2);
   });
 
   test("falls back to newest '## Review' by viewer when no marker", () => {
@@ -25,11 +25,11 @@ describe("findReviewCommentId", () => {
       c(2, "2024-01-05T00:00:00Z", "## Review two", "me"),
       c(3, "2024-01-09T00:00:00Z", "## Review elsewhere", "other"),
     ];
-    expect(findReviewCommentId(comments, "me")).toBe(2);
+    expect(findTargetCommentId(comments, "me")).toBe(2);
   });
 
   test("returns null when nothing matches", () => {
-    expect(findReviewCommentId([c(1, "2024-01-01T00:00:00Z", "hi", "me")], "me")).toBeNull();
+    expect(findTargetCommentId([c(1, "2024-01-01T00:00:00Z", "hi", "me")], "me")).toBeNull();
   });
 
   test("falls back to a standalone iago-block comment by viewer when no marker/heading", () => {
@@ -37,7 +37,7 @@ describe("findReviewCommentId", () => {
       c(1, "2024-01-01T00:00:00Z", "just chatting", "me"),
       c(2, "2024-01-02T00:00:00Z", "<!-- iago:begin -->\nDIAG\n<!-- iago:end -->", "me"),
     ];
-    expect(findReviewCommentId(comments, "me")).toBe(2);
+    expect(findTargetCommentId(comments, "me")).toBe(2);
   });
 
   test("picks the newest standalone iago-block comment by viewer", () => {
@@ -45,7 +45,7 @@ describe("findReviewCommentId", () => {
       c(1, "2024-01-01T00:00:00Z", "<!-- iago:begin -->\nOLD\n<!-- iago:end -->", "me"),
       c(2, "2024-01-05T00:00:00Z", "<!-- iago:begin -->\nNEW\n<!-- iago:end -->", "me"),
     ];
-    expect(findReviewCommentId(comments, "me")).toBe(2);
+    expect(findTargetCommentId(comments, "me")).toBe(2);
   });
 
   test("marker and heading win over a standalone iago-block comment", () => {
@@ -53,18 +53,18 @@ describe("findReviewCommentId", () => {
       c(1, "2024-01-01T00:00:00Z", "<!-- iago:begin -->\nx\n<!-- iago:end -->", "me"),
       c(2, "2024-01-02T00:00:00Z", "review <!-- review-skill -->", "bot"),
     ];
-    expect(findReviewCommentId(marker, "me")).toBe(2);
+    expect(findTargetCommentId(marker, "me")).toBe(2);
 
     const heading = [
       c(3, "2024-01-03T00:00:00Z", "<!-- iago:begin -->\nx\n<!-- iago:end -->", "me"),
       c(4, "2024-01-04T00:00:00Z", "## Review", "me"),
     ];
-    expect(findReviewCommentId(heading, "me")).toBe(4);
+    expect(findTargetCommentId(heading, "me")).toBe(4);
   });
 
   test("ignores an iago-block comment authored by someone else", () => {
     const comments = [c(1, "2024-01-01T00:00:00Z", "<!-- iago:begin -->\nx\n<!-- iago:end -->", "other")];
-    expect(findReviewCommentId(comments, "me")).toBeNull();
+    expect(findTargetCommentId(comments, "me")).toBeNull();
   });
 });
 
