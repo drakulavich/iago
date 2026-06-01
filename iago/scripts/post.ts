@@ -1,6 +1,7 @@
 // Idempotently append/replace an Iago Mermaid block inside the most recent
-// /review comment on a GitHub PR, falling back to a new comment. Pure helpers
-// here; orchestration + CLI entry are added in a later task. Runtime: bun + gh.
+// /review comment on a GitHub PR; if there's no /review comment but a prior
+// standalone Iago comment exists, replace that one in place; otherwise post a
+// new comment. Runtime: bun + gh.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync, rmSync } from "node:fs";
@@ -29,6 +30,14 @@ export function findReviewCommentId(comments: Comment[], viewer: string): number
     .filter((x) => x.user.login === viewer && HEADING.test(x.body))
     .sort(byDate);
   if (headed.length > 0) return headed[headed.length - 1]!.id;
+
+  // Last resort: a prior diagram posted as a standalone comment (mode=comment,
+  // or the postNew() fallback) — no marker, no heading, just our own Iago
+  // block. Replace it in place so re-runs keep one block per PR.
+  const blocked = comments
+    .filter((x) => x.user.login === viewer && IAGO_BLOCK.test(x.body))
+    .sort(byDate);
+  if (blocked.length > 0) return blocked[blocked.length - 1]!.id;
 
   return null;
 }
