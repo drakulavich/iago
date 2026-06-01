@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
-  findReviewCommentId,
+  findTargetCommentId,
   replaceOrAppendBlock,
   type Comment,
 } from "../../iago/scripts/post.ts";
@@ -9,14 +9,14 @@ function c(id: number, created_at: string, body: string, login = "me"): Comment 
   return { id, created_at, body, user: { login } };
 }
 
-describe("findReviewCommentId", () => {
+describe("findTargetCommentId", () => {
   test("marker match wins over heading and picks newest marked", () => {
     const comments = [
       c(1, "2024-01-01T00:00:00Z", "## Review old", "me"),
       c(2, "2024-01-02T00:00:00Z", "diagram <!-- review-skill --> here", "bot"),
       c(3, "2024-01-03T00:00:00Z", "## Review newer by me", "me"),
     ];
-    expect(findReviewCommentId(comments, "me")).toBe(2);
+    expect(findTargetCommentId(comments, "me")).toBe(2);
   });
 
   test("falls back to newest '## Review' by viewer when no marker", () => {
@@ -25,11 +25,46 @@ describe("findReviewCommentId", () => {
       c(2, "2024-01-05T00:00:00Z", "## Review two", "me"),
       c(3, "2024-01-09T00:00:00Z", "## Review elsewhere", "other"),
     ];
-    expect(findReviewCommentId(comments, "me")).toBe(2);
+    expect(findTargetCommentId(comments, "me")).toBe(2);
   });
 
   test("returns null when nothing matches", () => {
-    expect(findReviewCommentId([c(1, "2024-01-01T00:00:00Z", "hi", "me")], "me")).toBeNull();
+    expect(findTargetCommentId([c(1, "2024-01-01T00:00:00Z", "hi", "me")], "me")).toBeNull();
+  });
+
+  test("falls back to a standalone iago-block comment by viewer when no marker/heading", () => {
+    const comments = [
+      c(1, "2024-01-01T00:00:00Z", "just chatting", "me"),
+      c(2, "2024-01-02T00:00:00Z", "<!-- iago:begin -->\nDIAG\n<!-- iago:end -->", "me"),
+    ];
+    expect(findTargetCommentId(comments, "me")).toBe(2);
+  });
+
+  test("picks the newest standalone iago-block comment by viewer", () => {
+    const comments = [
+      c(1, "2024-01-01T00:00:00Z", "<!-- iago:begin -->\nOLD\n<!-- iago:end -->", "me"),
+      c(2, "2024-01-05T00:00:00Z", "<!-- iago:begin -->\nNEW\n<!-- iago:end -->", "me"),
+    ];
+    expect(findTargetCommentId(comments, "me")).toBe(2);
+  });
+
+  test("marker and heading win over a standalone iago-block comment", () => {
+    const marker = [
+      c(1, "2024-01-01T00:00:00Z", "<!-- iago:begin -->\nx\n<!-- iago:end -->", "me"),
+      c(2, "2024-01-02T00:00:00Z", "review <!-- review-skill -->", "bot"),
+    ];
+    expect(findTargetCommentId(marker, "me")).toBe(2);
+
+    const heading = [
+      c(3, "2024-01-03T00:00:00Z", "<!-- iago:begin -->\nx\n<!-- iago:end -->", "me"),
+      c(4, "2024-01-04T00:00:00Z", "## Review", "me"),
+    ];
+    expect(findTargetCommentId(heading, "me")).toBe(4);
+  });
+
+  test("ignores an iago-block comment authored by someone else", () => {
+    const comments = [c(1, "2024-01-01T00:00:00Z", "<!-- iago:begin -->\nx\n<!-- iago:end -->", "other")];
+    expect(findTargetCommentId(comments, "me")).toBeNull();
   });
 });
 
@@ -105,6 +140,31 @@ describe("post", () => {
     try {
       const url = post({ repo: "o/r", pr: "5", mode: "append", diagramFile: f }, gh);
       expect(url).toBe("https://gh/comment/7");
+    } finally {
+      rmSync(f, { force: true });
+    }
+  });
+
+  test("append replaces a standalone iago comment in place instead of duplicating", () => {
+    const f = tmpFile("<!-- iago:begin -->\nNEW\n<!-- iago:end -->");
+    const calls: string[][] = [];
+    const gh = (args: string[]): string => {
+      calls.push(args);
+      if (args[1] === "graphql") return "me\n";
+      if (args.includes("--slurp")) {
+        return JSON.stringify([
+          [{ id: 42, created_at: "2024-01-01T00:00:00Z", body: "<!-- iago:begin -->\nOLD\n<!-- iago:end -->", user: { login: "me" } }],
+        ]);
+      }
+      if (args.includes("PATCH")) return JSON.stringify({ html_url: "https://gh/comment/42" });
+      return "";
+    };
+    try {
+      const url = post({ repo: "o/r", pr: "5", mode: "append", diagramFile: f }, gh);
+      expect(url).toBe("https://gh/comment/42");
+      // Patched the existing comment; never posted a new one.
+      expect(calls.some((a) => a.includes("PATCH") && a.some((s) => s.endsWith("/issues/comments/42")))).toBe(true);
+      expect(calls.some((a) => a[0] === "pr" && a[1] === "comment")).toBe(false);
     } finally {
       rmSync(f, { force: true });
     }
