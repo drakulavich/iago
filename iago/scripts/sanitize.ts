@@ -14,7 +14,8 @@ const LEADING_AT = /\[(@[^\]"]*)\]/g;
 
 function rewriteBlock(body: string): string {
   const lines = body.split("\n");
-  const first = lines.find((l) => l.trim() !== "")?.trim() ?? "";
+  // Skip blank lines and %% comments/directives (e.g. %%{init: ...}%%) to find the header.
+  const first = lines.find((l) => l.trim() !== "" && !l.trim().startsWith("%%"))?.trim() ?? "";
   const isFlow = /^(flowchart|graph)\b/.test(first);
   return lines
     .map((line) => {

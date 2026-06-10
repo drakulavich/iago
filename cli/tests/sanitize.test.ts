@@ -42,6 +42,12 @@ describe("sanitize", () => {
     expect(sanitize(src)).toBe(src);
   });
 
+  test("quotes leading-@ labels when %% comments precede the flowchart header", () => {
+    const src =
+      "```mermaid\n%%{init: {'theme': 'neutral'}}%%\n%% request path\nflowchart TD\n  M[a] --> N[@i18n locale]\n```";
+    expect(sanitize(src)).toContain('N["@i18n locale"]');
+  });
+
   test("leaves [@...] outside flowchart blocks untouched", () => {
     const src = "```mermaid\nsequenceDiagram\n  A->>B: load [@utils/common]\n```";
     expect(sanitize(src)).toBe(src);

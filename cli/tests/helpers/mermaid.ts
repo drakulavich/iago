@@ -1,6 +1,12 @@
 // Parse-validate Mermaid sources with the real mermaid parser, the same one
 // GitHub runs. mermaid requires a DOM, so jsdom globals must be installed
 // before the (dynamic, memoized) import.
+//
+// Known limitation: window/document/navigator stay installed on globalThis for
+// the rest of the worker's lifetime — no cleanup. The memoized mermaid instance
+// touches them lazily on every parse(), so restoring the globals mid-suite
+// would break later calls. Don't import this helper from tests that assert a
+// non-browser environment.
 import { JSDOM } from "jsdom";
 
 let mermaidPromise: Promise<typeof import("mermaid").default> | undefined;
