@@ -78,6 +78,10 @@ Parse `$ARGUMENTS` permissively:
    - Use real names from the diff (functions, classes, services, tables) — never placeholders like `ServiceA`.
    - For `sequence`: label arrows with the actual method/endpoint, mark async with `-)`, sync with `->>`.
    - For `flow`: prefer `flowchart TD`; use `{}` for decisions, `[]` for steps, `[[ ]]` for subroutines.
+   - **Never start an unquoted node label with `@`.** Mermaid parses `[@` as
+     its edge-ID/shape syntax, so `N[@utils/utils -> x]` fails the whole
+     diagram. Wrap the label in double quotes: `N["@utils/utils -> x"]`.
+     (`@` in the middle of a label is fine.)
    - For `class`: include only classes touched by the diff plus their direct collaborators; show new members with `+` and removed with `-`.
    - For `er`: only include tables/entities touched by the migration plus their FK neighbors.
    - No HTML, no inline styles unless necessary for readability. No emoji in node labels.

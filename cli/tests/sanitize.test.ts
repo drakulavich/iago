@@ -30,4 +30,20 @@ describe("sanitize", () => {
     const src = "```js\nconst x = 1; const y = 2;\n```";
     expect(sanitize(src)).toBe(src);
   });
+
+  test("quotes flowchart node labels starting with @", () => {
+    const src = "```mermaid\nflowchart TD\n  M[a] -.-> N[@utils/utils -> antd locale]\n```";
+    expect(sanitize(src)).toContain('N["@utils/utils -> antd locale"]');
+  });
+
+  test("leaves mid-label @ and already-quoted labels untouched", () => {
+    const src =
+      '```mermaid\nflowchart TD\n  A[imports from @utils/common] --> B["@i18n locale"]\n```';
+    expect(sanitize(src)).toBe(src);
+  });
+
+  test("leaves [@...] outside flowchart blocks untouched", () => {
+    const src = "```mermaid\nsequenceDiagram\n  A->>B: load [@utils/common]\n```";
+    expect(sanitize(src)).toBe(src);
+  });
 });
