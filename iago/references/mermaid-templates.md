@@ -96,6 +96,17 @@ Tips:
 - Prefer `TD` (top-down). Use `LR` only when the chain is short and wide.
 - `{}` = decision, `[]` = step, `[[ ]]` = subroutine, `[/ /]` = I/O,
   `[( )]` = data store, `(( ))` = start/end.
+- **Never start an unquoted node label with `@`.** Mermaid lexes `[@` as its
+  edge-ID/shape syntax and the whole diagram fails to parse. Quote the label
+  (mid-label `@` is fine):
+
+  ```mermaid-bad
+  M -.-> N[@utils/utils -> antd locale]     %% ✗ '[@' breaks the parser
+  ```
+
+  ```mermaid-good
+  M -.-> N["@utils/utils -> antd locale"]   %% ✓ quoted label
+  ```
 
 ---
 

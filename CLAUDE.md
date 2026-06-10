@@ -33,8 +33,12 @@ It is **skill-first**, distributed three ways:
 - **Mermaid: never use reserved keywords as participant/node ids.** `loop`,
   `alt`, `opt`, `par`, `note`, `end`, `activate` (case-insensitive) break
   GitHub's renderer. (Incident: a `participant Loop` made `sequence.md` fail to
-  render.) When authoring/editing example diagrams, validate with
-  `mermaid.parse()` before committing.
+  render.) Likewise **never start an unquoted flowchart node label with `@`** —
+  Mermaid lexes `[@` as edge-ID/shape syntax (incident: `N[@utils/utils -> …]`
+  killed a posted diagram; `sanitize.ts` now auto-quotes these). Repo example
+  diagrams are parse-validated by `cd cli && bun test`
+  (`cli/tests/mermaid-validation.test.ts`); field rendering incidents go into
+  `cli/tests/fixtures/mermaid/{valid,invalid}/` verbatim.
 - **`post.ts` gh PATCH uses `-f` (raw-field), not `-F`.** `gh api -F/--field`
   treats a leading `@` as a file-read; comment bodies starting with `@mention`
   would break. `-f/--raw-field` is the safe static-string flag. Keep it.
