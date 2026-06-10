@@ -1,0 +1,25 @@
+flowchart TD
+  A[test: api / apiAs / apiInCase / apiAsNewUser] --> B[runInContext via AsyncLocalStorage]
+  B --> C[real src api fn: cases, collections, dashboards, systemDashboards]
+  C --> D[playwright-adapter: getContext from ALS]
+  D --> E[ctx.fetch url, method, headers, body, params]
+  E --> F{status 401?}
+  F -->|no| G[parseBody json/text/arraybuffer]
+  F -->|yes| R[getToken forceRefresh -> retry with new Bearer -> evict cached context]
+  R --> G
+  G --> H{validateStatus 2xx?}
+  H -->|yes| I[AxiosResponse -> typed result]
+  H -->|no| J[throw AxiosError E_HTTP_status + hint]
+
+  subgraph install[installAppApi — import chain kept Node-loadable]
+    K[dynamic import of 4 domain modules] --> L[collections-api at src/collections/api]
+    L --> M[cache.ts imports sortByName from lean @utils/common]
+    M -. chain cut .- N["@utils/utils -> @i18n -> antd locale: not loaded"]
+    K --> O[collections/model deep-imports @core/records-browser/models, skips barrel]
+  end
+  C -. loaded once by .- install
+
+  subgraph ctx[APIRequestContext per user+case]
+    P[bearer token: direct Keycloak grant] --- Q[Case-Id header when bound]
+  end
+  E -.uses.- ctx
