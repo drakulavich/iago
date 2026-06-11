@@ -33,5 +33,5 @@ export async function parseMermaid(src: string): Promise<void> {
 
 /** Bodies of all ```mermaid fences in a markdown document (same fence shape as sanitize.ts). */
 export function extractMermaidBlocks(markdown: string): string[] {
-  return [...markdown.matchAll(/```mermaid\n([\s\S]*?)\n```/g)].map((m) => m[1] ?? "");
+  return [...markdown.matchAll(/```mermaid\r?\n([\s\S]*?)\r?\n```/g)].map((m) => m[1] ?? "");
 }
