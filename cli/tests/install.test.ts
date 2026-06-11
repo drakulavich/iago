@@ -306,7 +306,7 @@ describe("buildFakeTarball helper", () => {
     // Extract it and verify shape.
     const dest = join(scratch, "helper-extract");
     mkdirSync(dest, { recursive: true });
-    const proc = Bun.spawn(["tar", "-xzf", out, "-C", dest]);
+    const proc = Bun.spawn(["tar", "-xzf", out, "-C", dest, "--force-local"]);
     await proc.exited;
     expect(proc.exitCode).toBe(0);
     expect(existsSync(join(dest, "iago-9.9.9", "iago", "SKILL.md"))).toBe(true);
