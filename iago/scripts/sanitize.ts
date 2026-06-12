@@ -17,6 +17,7 @@ function rewriteBlock(body: string): string {
   // Skip blank lines and %% comments/directives (e.g. %%{init: ...}%%) to find the header.
   const first = lines.find((l) => l.trim() !== "" && !l.trim().startsWith("%%"))?.trim() ?? "";
   const isFlow = /^(flowchart|graph)\b/.test(first);
+  const eol = /\r/.test(body) ? "\r\n" : "\n";
   return lines
     .map((line) => {
       if (isFlow) return line.replace(LEADING_AT, '["$1"]');
@@ -26,7 +27,7 @@ function rewriteBlock(body: string): string {
       const rest = m[2] ?? "";
       return head + rest.replace(/;/g, ",");
     })
-    .join("\n");
+    .join(eol);
 }
 
 export function sanitize(src: string): string {
