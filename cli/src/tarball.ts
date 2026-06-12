@@ -72,7 +72,7 @@ export async function fetchAndExtract(src: TarballSource, tmpDir: string): Promi
   }
 
   // Extract via the system tar binary. Available on macOS, Linux, Win10+.
-  const proc = spawnSync("tar", ["-xzf", tarPath, "-C", tmpDir, ...TAR_OPTS], {
+  const proc = spawnSync("tar", [...TAR_OPTS, "-xzf", tarPath, "-C", tmpDir], {
     stdio: ["ignore", "pipe", "pipe"],
   });
   if (proc.status !== 0) {
@@ -117,7 +117,7 @@ export async function buildFakeTarball(
 
   const proc = spawnSync(
     "tar", 
-    ["-czf", outPath, "-C", scratchDir, `iago-${version}`, ...TAR_OPTS],
+    [...TAR_OPTS, "-czf", outPath, "-C", scratchDir, `iago-${version}`],
     { stdio: ["ignore", "pipe", "pipe"] },
   );
   if (proc.status !== 0) {
