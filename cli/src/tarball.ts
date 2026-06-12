@@ -12,6 +12,10 @@ import { spawnSync } from "node:child_process";
 import { copyFileSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+// platform dependent options
+// --force-local is needed on Windows to properly interpret colon in C:\
+export const TAR_OPTS: string[] = process.platform === "win32" ? ["--force-local"] : [];
+
 export interface TarballSource {
   /** GitHub repo "owner/name". */
   repo: string;
@@ -68,7 +72,7 @@ export async function fetchAndExtract(src: TarballSource, tmpDir: string): Promi
   }
 
   // Extract via the system tar binary. Available on macOS, Linux, Win10+.
-  const proc = spawnSync("tar", ["-xzf", tarPath, "-C", tmpDir, "--force-local"], {
+  const proc = spawnSync("tar", ["-xzf", tarPath, "-C", tmpDir, ...TAR_OPTS], {
     stdio: ["ignore", "pipe", "pipe"],
   });
   if (proc.status !== 0) {
@@ -112,8 +116,8 @@ export async function buildFakeTarball(
   writeFileSync(join(root, "iago", "examples", "sequence.md"), "fake\n");
 
   const proc = spawnSync(
-    "tar",
-    ["-czf", outPath, "-C", scratchDir, `iago-${version}`, "--force-local"],
+    "tar", 
+    ["-czf", outPath, "-C", scratchDir, `iago-${version}`, ...TAR_OPTS],
     { stdio: ["ignore", "pipe", "pipe"] },
   );
   if (proc.status !== 0) {
