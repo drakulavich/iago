@@ -12,9 +12,10 @@ import { spawnSync } from "node:child_process";
 import { copyFileSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+const isGitBash = !!process.env.MSYSTEM; // set by Git Bash: MINGW64, MINGW32, MSYS
 // platform dependent options
-// --force-local is needed on Windows to properly interpret colon in C:\
-export const TAR_OPTS: string[] = process.platform === "win32" ? ["--force-local"] : [];
+// --force-local is needed on Windows Git Bash to properly interpret colon in C:\
+export const TAR_OPTS: readonly string[] = process.platform === "win32" && isGitBash ? ["--force-local"] : [];
 
 export interface TarballSource {
   /** GitHub repo "owner/name". */
