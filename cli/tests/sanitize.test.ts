@@ -52,4 +52,15 @@ describe("sanitize", () => {
     const src = "```mermaid\nsequenceDiagram\n  A->>B: load [@utils/common]\n```";
     expect(sanitize(src)).toBe(src);
   });
+
+  test("preserves LF eol", () => {
+    const src = "leading text\n```mermaid\n1\n2\n3\n```\ntrailing text";
+    expect(sanitize(src)).toBe(src);
+  });
+
+  test("preserves CRLF eol", () => {
+    const src = "leading text\r\n```mermaid\r\n1\r\n2\r\n3\r\n```\r\ntrailing text";
+    expect(sanitize(src)).toBe(src);
+  });
+
 });
