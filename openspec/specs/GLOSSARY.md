@@ -15,7 +15,7 @@ need a new term, add it here first.
 | **Mermaid** | The diagram markup GitHub renders. Iago authors GitHub-renderable Mermaid; templates live in `iago/references/mermaid-templates.md`. |
 | **Mermaid reserved keyword** | An identifier GitHub's renderer rejects as a node/participant id — `loop`, `alt`, `opt`, `par`, `note`, `end`, `activate` (case-insensitive); never used as ids. |
 | **`/review` comment** | The existing AI-review comment on a PR that Iago appends its Diagram to (the default `append` mode). |
-| **Append (squawk)** | The default behavior — adding the Diagram on top of the existing `/review` comment rather than as a new comment. |
+| **Append (squawk)** | The default behavior — appending the Diagram to the end of the existing `/review` comment body (`iago/scripts/post.ts:50-51`) rather than posting a new comment. |
 | **`--mode=comment`** | The flag that posts the Diagram as a standalone PR comment instead of appending to the `/review` comment. |
 | **Re-run idempotency** | On a repeat invocation, Iago replaces its previous Diagram comment in place rather than duplicating it. |
 | **post.ts** | The helper (`iago/scripts/post.ts`) that finds, replaces, and posts the Diagram comment via authenticated `gh`; its `gh api` PATCH uses `-f` (raw-field). |
