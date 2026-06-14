@@ -1,0 +1,34 @@
+schema: spec-driven
+
+context: |
+  Iago: a skill-first tool for AI coding agents that appends a Mermaid diagram
+  (sequence / flow / class / entity-relation) to a GitHub pull request's `/review`
+  comment. The host agent's LLM draws the diagram; Iago's helper
+  (`iago/scripts/post.ts`) posts it via authenticated `gh`. The diagram type is
+  auto-detected from the diff (overridable). Invoked as `/iago [PR] [type]` or its
+  `/squawk` alias; `--mode=comment` posts a standalone comment instead of appending.
+  Distributed three ways: skill folders (`iago/`, `squawk/`), a Claude Code plugin
+  (`.claude-plugin/`), and a TypeScript installer CLI (`cli/`, published as
+  `@drakulavich/iago`). Runtime is bun + gh, nothing else.
+  Critical rules: NO GitHub Action, API-key/provider path, or heuristic generator —
+  the diagram is always drawn by the host agent's LLM; the skill folder
+  (`iago/scripts/*.ts`) stays dependency-free, importing only Node built-ins;
+  Mermaid never uses reserved keywords (loop/alt/opt/par/note/end/activate) as node
+  or participant ids; `post.ts`'s `gh api` PATCH uses `-f` (raw-field), never `-F`;
+  versions stay aligned across `cli/package.json` and
+  `.claude-plugin/{plugin,marketplace}.json`; never commit local dev state — stage
+  files explicitly, never `git add -A`; diagram quality is validated by dogfooding,
+  not an eval suite.
+  See openspec/specs/README.md for personas and reading order, GLOSSARY.md for
+  canonical terms.
+
+rules:
+  proposal:
+    - Always include a "Non-goals" section
+  specs:
+    - Use glossary terms from openspec/specs/GLOSSARY.md verbatim
+    - Every requirement needs at least one happy-path and one error/edge scenario
+    - State outcomes, not implementation mechanisms, in requirement text
+    - Reference named personas (Pasha/Devin/Mira), never a generic "user"
+    - Record anything uncertain or where spec and code disagree under "Open Issues" — never invent a resolution
+    - Trace each requirement to code with file:line refs in a Technical Note
