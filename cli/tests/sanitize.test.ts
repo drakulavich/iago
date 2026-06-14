@@ -63,4 +63,16 @@ describe("sanitize", () => {
     expect(sanitize(src)).toBe(src);
   });
 
+  test("rewrites a CRLF sequence message and keeps CRLF eol", () => {
+    const src = "```mermaid\r\nsequenceDiagram\r\n  A->>B: load; then save\r\n```";
+    const want = "```mermaid\r\nsequenceDiagram\r\n  A->>B: load, then save\r\n```";
+    expect(sanitize(src)).toBe(want);
+  });
+
+  test("rewrites a CRLF flowchart [@...] label and keeps CRLF eol", () => {
+    const src = "```mermaid\r\nflowchart TD\r\n  N[@i18n locale]\r\n```";
+    const want = '```mermaid\r\nflowchart TD\r\n  N["@i18n locale"]\r\n```';
+    expect(sanitize(src)).toBe(want);
+  });
+
 });

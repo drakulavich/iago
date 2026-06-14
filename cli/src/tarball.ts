@@ -117,7 +117,7 @@ export async function buildFakeTarball(
   writeFileSync(join(root, "iago", "examples", "sequence.md"), "fake\n");
 
   const proc = spawnSync(
-    "tar", 
+    "tar",
     [...TAR_OPTS, "-czf", outPath, "-C", scratchDir, `iago-${version}`],
     { stdio: ["ignore", "pipe", "pipe"] },
   );
