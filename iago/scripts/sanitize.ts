@@ -6,17 +6,18 @@
 //    failing the whole diagram. (Incident: `N[@utils/utils -> ...]`.)
 // Scope: only inside ```mermaid blocks. Never touches other fences or prose.
 
-const FENCE = /(```mermaid\n)([\s\S]*?)(\n```)/g;
+const FENCE = /(```mermaid\r?\n)([\s\S]*?)(\r?\n```)/g;
 // Arrows: ->>, -->>, ->, -->, -), --), -x, --x, with optional +/- activation.
 const MSG = /^(\s*[A-Za-z_]\w*\s*(?:->>?[+-]?|-->>?|--?\)|--?x)\s*[A-Za-z_]\w*\s*:)(.*)$/;
 // Unquoted [@...] square-bracket labels; [^\]"] skips already-quoted ["@..."].
 const LEADING_AT = /\[(@[^\]"]*)\]/g;
 
 function rewriteBlock(body: string): string {
-  const lines = body.split("\n");
+  const lines = body.split(/\r?\n/);
   // Skip blank lines and %% comments/directives (e.g. %%{init: ...}%%) to find the header.
   const first = lines.find((l) => l.trim() !== "" && !l.trim().startsWith("%%"))?.trim() ?? "";
   const isFlow = /^(flowchart|graph)\b/.test(first);
+  const eol = /\r\n/.test(body) ? "\r\n" : "\n";
   return lines
     .map((line) => {
       if (isFlow) return line.replace(LEADING_AT, '["$1"]');
@@ -26,7 +27,7 @@ function rewriteBlock(body: string): string {
       const rest = m[2] ?? "";
       return head + rest.replace(/;/g, ",");
     })
-    .join("\n");
+    .join(eol);
 }
 
 export function sanitize(src: string): string {

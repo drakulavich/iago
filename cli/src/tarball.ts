@@ -12,6 +12,11 @@ import { spawnSync } from "node:child_process";
 import { copyFileSync, mkdirSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+const isGitBash = !!process.env.MSYSTEM; // set by Git Bash: MINGW64, MINGW32, MSYS
+// platform dependent options
+// --force-local is needed on Windows Git Bash to properly interpret colon in C:\
+export const TAR_OPTS: readonly string[] = process.platform === "win32" && isGitBash ? ["--force-local"] : [];
+
 export interface TarballSource {
   /** GitHub repo "owner/name". */
   repo: string;
@@ -68,7 +73,7 @@ export async function fetchAndExtract(src: TarballSource, tmpDir: string): Promi
   }
 
   // Extract via the system tar binary. Available on macOS, Linux, Win10+.
-  const proc = spawnSync("tar", ["-xzf", tarPath, "-C", tmpDir], {
+  const proc = spawnSync("tar", [...TAR_OPTS, "-xzf", tarPath, "-C", tmpDir], {
     stdio: ["ignore", "pipe", "pipe"],
   });
   if (proc.status !== 0) {
@@ -113,7 +118,7 @@ export async function buildFakeTarball(
 
   const proc = spawnSync(
     "tar",
-    ["-czf", outPath, "-C", scratchDir, `iago-${version}`],
+    [...TAR_OPTS, "-czf", outPath, "-C", scratchDir, `iago-${version}`],
     { stdio: ["ignore", "pipe", "pipe"] },
   );
   if (proc.status !== 0) {

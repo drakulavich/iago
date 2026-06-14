@@ -18,7 +18,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { performInstall, planInstall } from "../src/install.ts";
-import { buildFakeTarball } from "../src/tarball.ts";
+import { buildFakeTarball, TAR_OPTS } from "../src/tarball.ts";
 
 const CLI_ENTRY = join(import.meta.dir, "..", "src", "cli.ts");
 const FAKE_VERSION = "v9.9.9";
@@ -306,7 +306,7 @@ describe("buildFakeTarball helper", () => {
     // Extract it and verify shape.
     const dest = join(scratch, "helper-extract");
     mkdirSync(dest, { recursive: true });
-    const proc = Bun.spawn(["tar", "-xzf", out, "-C", dest]);
+    const proc = Bun.spawn(["tar", ...TAR_OPTS, "-xzf", out, "-C", dest]);
     await proc.exited;
     expect(proc.exitCode).toBe(0);
     expect(existsSync(join(dest, "iago-9.9.9", "iago", "SKILL.md"))).toBe(true);

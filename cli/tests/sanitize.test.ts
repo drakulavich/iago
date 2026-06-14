@@ -52,4 +52,27 @@ describe("sanitize", () => {
     const src = "```mermaid\nsequenceDiagram\n  A->>B: load [@utils/common]\n```";
     expect(sanitize(src)).toBe(src);
   });
+
+  test("preserves LF eol", () => {
+    const src = "leading text\n```mermaid\n1\n2\n3\n```\ntrailing text";
+    expect(sanitize(src)).toBe(src);
+  });
+
+  test("preserves CRLF eol", () => {
+    const src = "leading text\r\n```mermaid\r\n1\r\n2\r\n3\r\n```\r\ntrailing text";
+    expect(sanitize(src)).toBe(src);
+  });
+
+  test("rewrites a CRLF sequence message and keeps CRLF eol", () => {
+    const src = "```mermaid\r\nsequenceDiagram\r\n  A->>B: load; then save\r\n```";
+    const want = "```mermaid\r\nsequenceDiagram\r\n  A->>B: load, then save\r\n```";
+    expect(sanitize(src)).toBe(want);
+  });
+
+  test("rewrites a CRLF flowchart [@...] label and keeps CRLF eol", () => {
+    const src = "```mermaid\r\nflowchart TD\r\n  N[@i18n locale]\r\n```";
+    const want = '```mermaid\r\nflowchart TD\r\n  N["@i18n locale"]\r\n```';
+    expect(sanitize(src)).toBe(want);
+  });
+
 });
