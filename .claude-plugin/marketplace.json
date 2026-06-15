@@ -7,14 +7,14 @@
   },
   "metadata": {
     "description": "Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent. A Claude Code / Codex skill and its /squawk alias.",
-    "version": "0.3.3"
+    "version": "0.3.4"
   },
   "plugins": [
     {
       "name": "iago",
       "source": "./",
       "description": "Greptile-style Mermaid diagrams for AI code reviews — but driven by your own agent. Appends a sequence, flow, class, or entity-relation diagram (auto-detected from the diff) to a GitHub PR's /review comment. Bundles the /iago skill and its /squawk alias.",
-      "version": "0.3.3",
+      "version": "0.3.4",
       "author": {
         "name": "Anton Yakutovich",
         "url": "https://github.com/drakulavich"

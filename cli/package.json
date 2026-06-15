@@ -1,6 +1,6 @@
 {
   "name": "@drakulavich/iago",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Install/update Iago — a Greptile-style PR-diagram skill for Claude Code, Codex CLI, Copilot, and Gemini.",
   "type": "module",
   "bin": {
