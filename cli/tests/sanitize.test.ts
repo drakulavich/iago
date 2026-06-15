@@ -112,6 +112,15 @@ describe("sanitize", () => {
     expect(sanitize(once)).toBe(once);
   });
 
+  // Pins the two-pass ordering: quoteBracketedLabels must run before LEADING_AT.
+  // For a combined leading-@ + nested-bracket label, LEADING_AT alone (its
+  // [^\]"]* stops at the first ]) would yield the still-broken N["@utils[0"]].
+  // Quoting the whole label first makes LEADING_AT a correct no-op.
+  test("quotes a label with both a leading @ and inner brackets", () => {
+    const src = "```mermaid\nflowchart TD\n  N[@utils[0]] --> B\n```";
+    expect(sanitize(src)).toContain('N["@utils[0]"]');
+  });
+
   test("leaves [] outside flowchart blocks untouched", () => {
     const src = "```mermaid\nsequenceDiagram\n  A->>B: returns []\n```";
     expect(sanitize(src)).toBe(src);
