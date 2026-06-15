@@ -75,4 +75,52 @@ describe("sanitize", () => {
     expect(sanitize(src)).toBe(want);
   });
 
+  test("quotes a rectangle label whose text contains square brackets", () => {
+    const src = "```mermaid\nflowchart TD\n  G2P -- yes --> Vosk[return []]\n```";
+    expect(sanitize(src)).toContain('Vosk["return []"]');
+  });
+
+  test("quotes a rectangle label with a non-empty nested index", () => {
+    const src = "```mermaid\nflowchart TD\n  A[items arr[0]] --> B\n```";
+    expect(sanitize(src)).toContain('A["items arr[0]"]');
+  });
+
+  test("leaves rectangle labels without inner brackets untouched", () => {
+    const src = "```mermaid\nflowchart TD\n  A[normalize unicode] --> B[write stdout]\n```";
+    expect(sanitize(src)).toBe(src);
+  });
+
+  test("leaves stadium, parallelogram, subroutine, cylinder, trapezoid shapes untouched", () => {
+    const src =
+      "```mermaid\nflowchart TD\n  S([read line]) --> E[/opus encode/]\n  E --> R[[run job]]\n  R --> D[(database)]\n  D --> T[/wide\\]\n```";
+    expect(sanitize(src)).toBe(src);
+  });
+
+  test("leaves an already-quoted bracketed label untouched", () => {
+    const src = '```mermaid\nflowchart TD\n  V["return []"] --> E\n```';
+    expect(sanitize(src)).toBe(src);
+  });
+
+  test("does not re-quote bracketed text inside an existing quoted label", () => {
+    const src = '```mermaid\nflowchart TD\n  A["call B[c[0]]"] --> E\n```';
+    expect(sanitize(src)).toBe(src);
+  });
+
+  test("is idempotent on a nested-bracket label (second pass is a no-op)", () => {
+    const src = "```mermaid\nflowchart TD\n  G2P -- yes --> Vosk[return []]\n```";
+    const once = sanitize(src);
+    expect(sanitize(once)).toBe(once);
+  });
+
+  test("leaves [] outside flowchart blocks untouched", () => {
+    const src = "```mermaid\nsequenceDiagram\n  A->>B: returns []\n```";
+    expect(sanitize(src)).toBe(src);
+  });
+
+  test("rewrites a CRLF nested-bracket label and keeps CRLF eol", () => {
+    const src = "```mermaid\r\nflowchart TD\r\n  V[return []]\r\n```";
+    const want = '```mermaid\r\nflowchart TD\r\n  V["return []"]\r\n```';
+    expect(sanitize(src)).toBe(want);
+  });
+
 });

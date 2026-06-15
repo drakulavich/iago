@@ -1,0 +1,10 @@
+flowchart TD
+    Start([read line]) --> Empty{empty?}
+    Empty -- yes --> Start
+    Empty -- no --> Norm[normalize unicode]
+    Norm --> G2P{lang == ru?}
+    G2P -- yes --> Vosk[return []]
+    G2P -- no --> Misaki[misaki-rs G2P → Kokoro]
+    Vosk --> Encode[/opus encode/]
+    Misaki --> Encode
+    Encode --> Out([write stdout])
