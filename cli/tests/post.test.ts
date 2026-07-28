@@ -173,6 +173,11 @@ describe("post", () => {
   test("append falls back to a new comment when no review comment found", () => {
     const f = tmpFile("<!-- iago:begin -->\nDIAG\n<!-- iago:end -->");
     const gh = (args: string[]): string => {
+      if (args.some((arg) => arg.includes("pullRequest"))) {
+        return JSON.stringify({
+          data: { repository: { pullRequest: { comments: { nodes: [] } } } },
+        });
+      }
       if (args[1] === "graphql") return "me\n";
       if (args.includes("--slurp")) return JSON.stringify([[]]);
       if (args[0] === "pr" && args[1] === "comment") return "https://gh/comment/new";
@@ -181,6 +186,46 @@ describe("post", () => {
     try {
       const url = post({ repo: "o/r", pr: "5", mode: "append", diagramFile: f }, gh);
       expect(url).toBe("https://gh/comment/new");
+    } finally {
+      rmSync(f, { force: true });
+    }
+  });
+
+  test("append patches a fresh standalone Iago comment visible only through GraphQL", () => {
+    const f = tmpFile("<!-- iago:begin -->\nNEW\n<!-- iago:end -->");
+    const calls: string[][] = [];
+    const gh = (args: string[]): string => {
+      calls.push(args);
+      if (args.some((arg) => arg.includes("viewer{login}"))) return "me\n";
+      if (args.some((arg) => arg.includes("pullRequest"))) {
+        return JSON.stringify({
+          data: {
+            repository: {
+              pullRequest: {
+                comments: {
+                  nodes: [{
+                    databaseId: 42,
+                    createdAt: "2024-01-01T00:00:00Z",
+                    body: "<!-- iago:begin -->\nOLD\n<!-- iago:end -->",
+                    author: { login: "me" },
+                  }],
+                  pageInfo: { hasNextPage: false, endCursor: null },
+                },
+              },
+            },
+          },
+        });
+      }
+      if (args.includes("--slurp")) return JSON.stringify([[]]);
+      if (args.includes("PATCH")) return JSON.stringify({ html_url: "https://gh/comment/42" });
+      if (args[0] === "pr" && args[1] === "comment") return "https://gh/comment/new";
+      return "";
+    };
+    try {
+      const url = post({ repo: "o/r", pr: "5", mode: "append", diagramFile: f }, gh);
+      expect(url).toBe("https://gh/comment/42");
+      expect(calls.some((a) => a.includes("PATCH") && a.some((s) => s.endsWith("/issues/comments/42")))).toBe(true);
+      expect(calls.some((a) => a[0] === "pr" && a[1] === "comment")).toBe(false);
     } finally {
       rmSync(f, { force: true });
     }
