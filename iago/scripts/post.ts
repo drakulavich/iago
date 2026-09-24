@@ -67,6 +67,61 @@ function ghJson<T>(gh: GhRunner, args: string[]): T {
   return JSON.parse(gh(args)) as T;
 }
 
+interface FreshCommentNode {
+  databaseId: number | null;
+  createdAt: string;
+  body: string;
+  author: { login: string } | null;
+}
+
+interface FreshCommentsResponse {
+  data: {
+    repository: {
+      pullRequest: {
+        comments: { nodes: FreshCommentNode[] };
+      } | null;
+    } | null;
+  };
+}
+
+// GitHub's REST comment list can lag just after `gh pr comment` creates a
+// standalone fallback. GraphQL sees the fresh comment immediately, so only
+// use it as a second lookup before creating another fallback comment.
+function findFreshTargetCommentId(
+  gh: GhRunner,
+  owner: string,
+  name: string,
+  pr: string,
+  viewer: string,
+): { id: number; comments: Comment[] } | null {
+  const query = `query($owner: String!, $name: String!, $number: Int!) {
+    repository(owner: $owner, name: $name) {
+      pullRequest(number: $number) {
+        comments(last: 100) {
+          nodes { databaseId createdAt body author { login } }
+        }
+      }
+    }
+  }`;
+  const response = ghJson<FreshCommentsResponse>(gh, [
+    "api", "graphql",
+    "-f", `query=${query}`,
+    "-f", `owner=${owner}`,
+    "-f", `name=${name}`,
+    "-F", `number=${pr}`,
+  ]);
+  const comments = (response.data.repository?.pullRequest?.comments.nodes ?? [])
+    .filter((comment): comment is FreshCommentNode & { databaseId: number } => comment.databaseId !== null)
+    .map((comment) => ({
+      id: comment.databaseId,
+      created_at: comment.createdAt,
+      body: comment.body,
+      user: { login: comment.author?.login ?? "" },
+    }));
+  const id = findTargetCommentId(comments, viewer);
+  return id === null ? null : { id, comments };
+}
+
 export function post(opts: PostOpts, gh: GhRunner = defaultGh): string {
   const [owner, name] = opts.repo.split("/");
   if (!owner || !name) throw new Error(`Invalid --repo (want OWNER/REPO): ${opts.repo}`);
@@ -93,9 +148,16 @@ export function post(opts: PostOpts, gh: GhRunner = defaultGh): string {
     "-H", "Accept: application/vnd.github+json",
     `/repos/${owner}/${name}/issues/${opts.pr}/comments`,
   ]);
-  const comments = pages.flat();
+  let comments = pages.flat();
 
-  const targetId = findTargetCommentId(comments, viewer);
+  let targetId = findTargetCommentId(comments, viewer);
+  if (targetId === null) {
+    const freshTarget = findFreshTargetCommentId(gh, owner, name, opts.pr, viewer);
+    if (freshTarget !== null) {
+      targetId = freshTarget.id;
+      comments = freshTarget.comments;
+    }
+  }
   if (targetId === null) return postNew();
 
   const current = comments.find((x) => x.id === targetId)!.body;
