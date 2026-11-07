@@ -35,17 +35,17 @@ jobs:
       run:
         working-directory: cli
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.1.0
         with:
           # When run via workflow_dispatch, fetch the requested tag explicitly.
           ref: ${{ github.event.inputs.tag || github.ref }}
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@v2.2.0
         with:
           # Pin the toolchain, not just the action ref (see .bun-version).
           bun-version-file: .bun-version
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6.5.0
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
