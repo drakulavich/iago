@@ -35,7 +35,7 @@ jobs:
       run:
         working-directory: cli
     steps:
-      - uses: actions/checkout@v6.1.0
+      - uses: actions/checkout@v7.0.1
         with:
           # When run via workflow_dispatch, fetch the requested tag explicitly.
           ref: ${{ github.event.inputs.tag || github.ref }}

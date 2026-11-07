@@ -23,7 +23,7 @@ jobs:
       run:
         working-directory: cli
     steps:
-      - uses: actions/checkout@v6.1.0
+      - uses: actions/checkout@v7.0.1
       - uses: oven-sh/setup-bun@v2.2.0
         with:
           # Pin the toolchain, not just the action ref. A SHA-pinned action
@@ -41,7 +41,7 @@ jobs:
     name: plugin validate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.1.0
+      - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v6.5.0
         with:
           node-version: "20"
