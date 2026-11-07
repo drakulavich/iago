@@ -45,7 +45,7 @@ jobs:
           # Pin the toolchain, not just the action ref (see .bun-version).
           bun-version-file: .bun-version
 
-      - uses: actions/setup-node@v6.5.0
+      - uses: actions/setup-node@v7.1.0
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
